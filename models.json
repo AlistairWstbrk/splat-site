@@ -1,0 +1,46 @@
+[
+    {
+        "name": "Chevrolet Blazer EV (Hood Open)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Closed)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Open - Video)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open%20Video).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Open)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Lifted - Video)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0819).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Lifted)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted).ply"
+    },
+    {
+        "name": "Chevrolet Equinox PPV (Hood Closed)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Chevrolet Equinox PPV (Hood Open)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Ford E-Transit (Hood Closed)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Ford E-Transit (Hood Open)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Ford E-Transit (Video Source)",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply"
+    }
+]
