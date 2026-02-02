@@ -305,7 +305,7 @@ other
                         select.appendChild(option);
                     });
 
-                    // Run the Persistence Logic (must be done AFTER models are loaded)
+                    // Run the Persistence Logic (must be done after models are loaded)
                     checkPersistence();
                 })
                 .catch(error => {
@@ -318,7 +318,7 @@ other
                 window.location.search = '?url=' + url;
             }
 
-            // 3. Bulletproof Persistence Check
+            // 3. Persistence Check
             function checkPersistence() {
                 const currentParams = new URLSearchParams(window.location.search);
                 const rawUrl = currentParams.get('url');
