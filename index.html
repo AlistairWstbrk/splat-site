@@ -274,7 +274,7 @@ other
 		</div>
 		<script src="main.js"></script>
 
-        <div style="position: absolute; top: 50px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
+        <div style="position: absolute; top: 40px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
             <label for="modelSelect" style="display:block; margin-bottom:10px; font-weight:bold; font-size: 14px;">Select Vehicle Scan:</label>
             <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
                 <option value="" disabled selected>-- Choose a Model --</option>
@@ -283,14 +283,8 @@ other
 
         <script>
             // =========================================================
-            //  CONFIGURATION SECTION: ADD NEW MODELS BELOW
+            //  CONFIGURATION SECTION
             // =========================================================
-            // To add a new model:
-            // 1. Copy the last line starting with { name: ... }
-            // 2. Paste it on a new line
-            // 3. Change the Name and the URL
-            // =========================================================
-            
             const models = [
                 { name: "Chevrolet Blazer EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply" },
                 { name: "Chevrolet Equinox EV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply" },
@@ -305,7 +299,7 @@ other
                 { name: "Ford E-Transit (Video Source)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply" }
             ];
 
-            // Logic to populate list
+            // 1. Populate the dropdown menu
             const select = document.getElementById('modelSelect');
             models.forEach(model => {
                 const option = document.createElement('option');
@@ -314,8 +308,19 @@ other
                 select.appendChild(option);
             });
 
+            // 2. Function to reload the page with the new model
             function changeModel(url) {
                 window.location.search = '?url=' + url;
+            }
+
+            // 3. PERSISTENCE CHECK: Check URL on load and set dropdown value
+            // This runs immediately when page loads to set the correct name
+            const currentParams = new URLSearchParams(window.location.search);
+            const currentUrl = currentParams.get('url');
+
+            if (currentUrl) {
+                // Try to find the option with this URL and select it
+                select.value = currentUrl;
             }
         </script>
         </body>
