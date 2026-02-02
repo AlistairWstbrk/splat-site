@@ -277,60 +277,63 @@ other
         <div style="position: absolute; top: 40px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
             <label for="modelSelect" style="display:block; margin-bottom:10px; font-weight:bold; font-size: 14px;">Select Vehicle Scan:</label>
             <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
-                <option value="" disabled selected>-- Choose a Model --</option>
+                <option value="" disabled selected>Loading list...</option>
             </select>
         </div>
 
         <script>
-            // =========================================================
-            //  CONFIGURATION SECTION
-            // =========================================================
-            const models = [
-                { name: "Chevrolet Blazer EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply" },
-                { name: "Chevrolet Equinox EV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply" },
-                { name: "Chevrolet Equinox EV (Hood Open - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open%20Video).ply" },
-                { name: "Chevrolet Equinox EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open).ply" },
-                { name: "Chevrolet Equinox EV (Lifted - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0819).ply" },
-                { name: "Chevrolet Equinox EV (Lifted)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted).ply" },
-                { name: "Chevrolet Equinox PPV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Closed).ply" },
-                { name: "Chevrolet Equinox PPV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Open).ply" },
-                { name: "Ford E-Transit (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Closed).ply" },
-                { name: "Ford E-Transit (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Open).ply" },
-                { name: "Ford E-Transit (Video Source)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply" }
-            ];
-
-            // 1. Populate the dropdown menu
+            // This is now "Set it and forget it"
+            // The code automatically reads from models.json
+            
             const select = document.getElementById('modelSelect');
-            models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model.url;
-                option.textContent = model.name;
-                select.appendChild(option);
-            });
 
-            // 2. Function to reload the page with the new model
+            // 1. Fetch the JSON file
+            fetch('models.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("Could not find models.json");
+                    return response.json();
+                })
+                .then(models => {
+                    // Clear loading text
+                    select.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
+
+                    // Populate the list
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.url;
+                        option.textContent = model.name;
+                        select.appendChild(option);
+                    });
+
+                    // Run the Persistence Logic (must be done AFTER models are loaded)
+                    checkPersistence();
+                })
+                .catch(error => {
+                    console.error('Error loading models:', error);
+                    select.innerHTML = '<option disabled>Error loading list</option>';
+                });
+
+            // 2. Function to reload the page
             function changeModel(url) {
                 window.location.search = '?url=' + url;
             }
 
-            // 3. BULLETPROOF PERSISTENCE CHECK
-            // This grabs the URL from the browser, cleans it up, and compares it to your list
-            const currentParams = new URLSearchParams(window.location.search);
-            const rawUrl = currentParams.get('url');
+            // 3. Bulletproof Persistence Check
+            function checkPersistence() {
+                const currentParams = new URLSearchParams(window.location.search);
+                const rawUrl = currentParams.get('url');
 
-            if (rawUrl) {
-                // Decode BOTH sides to ensure we are comparing "clean" text against "clean" text
-                // This fixes the issue where %20 or %28 don't match spaces or parenthesis
-                const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
+                if (rawUrl) {
+                    const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
 
-                for (let i = 0; i < select.options.length; i++) {
-                    const optionValue = select.options[i].value;
-                    const optionValueDecoded = decodeURIComponent(optionValue).trim();
+                    for (let i = 0; i < select.options.length; i++) {
+                        const optionValue = select.options[i].value;
+                        const optionValueDecoded = decodeURIComponent(optionValue).trim();
 
-                    // Compare the cleaned-up versions
-                    if (optionValueDecoded === currentUrlDecoded) {
-                        select.selectedIndex = i;
-                        break;
+                        if (optionValueDecoded === currentUrlDecoded) {
+                            select.selectedIndex = i;
+                            break;
+                        }
                     }
                 }
             }
