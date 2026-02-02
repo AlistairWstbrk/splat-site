@@ -742,14 +742,29 @@ async function main() {
     try {
         viewMatrix = JSON.parse(decodeURIComponent(location.hash.slice(1)));
         carousel = false;
-} catch (err) {}
+    } catch (err) {}
 
-    // CHANGE THE LINK BELOW TO YOUR PREFERRED DEFAULT SCAN
-    const defaultUrl = "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply";
+    // -----------------------------------------------------------------------
+    // NEW LOGIC: If no URL is provided, DO NOT LOAD ANYTHING.
+    // Show a message asking the user to select a file.
+    // -----------------------------------------------------------------------
+    const urlParam = params.get("url");
 
-    const url = new URL(
-        params.get("url") || defaultUrl
-    );
+    if (!urlParam) {
+        // Stop the spinner
+        document.getElementById("spinner").style.display = "none";
+        // Show the message
+        const msg = document.getElementById("message");
+        msg.innerText = "Please select a vehicle scan from the menu.";
+        msg.style.color = "white"; // Make it white so it's readable
+        msg.style.background = "rgba(0,0,0,0.5)";
+        msg.style.padding = "20px";
+        msg.style.borderRadius = "10px";
+        return; // Stop execution here
+    }
+
+    // If we have a URL, proceed as normal
+    const url = new URL(urlParam);
     const req = await fetch(url, {
         mode: "cors", // no-cors, *cors, same-origin
         credentials: "omit", // include, *same-origin, omit
