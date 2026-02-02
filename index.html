@@ -313,14 +313,26 @@ other
                 window.location.search = '?url=' + url;
             }
 
-            // 3. PERSISTENCE CHECK: Check URL on load and set dropdown value
-            // This runs immediately when page loads to set the correct name
+            // 3. BULLETPROOF PERSISTENCE CHECK
+            // This grabs the URL from the browser, cleans it up, and compares it to your list
             const currentParams = new URLSearchParams(window.location.search);
-            const currentUrl = currentParams.get('url');
+            const rawUrl = currentParams.get('url');
 
-            if (currentUrl) {
-                // Try to find the option with this URL and select it
-                select.value = currentUrl;
+            if (rawUrl) {
+                // Decode BOTH sides to ensure we are comparing "clean" text against "clean" text
+                // This fixes the issue where %20 or %28 don't match spaces or parenthesis
+                const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
+
+                for (let i = 0; i < select.options.length; i++) {
+                    const optionValue = select.options[i].value;
+                    const optionValueDecoded = decodeURIComponent(optionValue).trim();
+
+                    // Compare the cleaned-up versions
+                    if (optionValueDecoded === currentUrlDecoded) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
             }
         </script>
         </body>
