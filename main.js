@@ -742,12 +742,13 @@ async function main() {
     try {
         viewMatrix = JSON.parse(decodeURIComponent(location.hash.slice(1)));
         carousel = false;
-    } catch (err) {}
+} catch (err) {}
+
+    // CHANGE THE LINK BELOW TO YOUR PREFERRED DEFAULT SCAN
+    const defaultUrl = "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply";
+
     const url = new URL(
-        // "nike.splat",
-        // location.href,
-        params.get("url") || "train.splat",
-        "https://huggingface.co/cakewalk/splat-data/resolve/main/",
+        params.get("url") || defaultUrl
     );
     const req = await fetch(url, {
         mode: "cors", // no-cors, *cors, same-origin
