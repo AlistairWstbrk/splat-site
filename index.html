@@ -20,7 +20,7 @@
 				width: 100vw;
 				font-family: sans-serif;
 				background: black;
-    			text-shadow: 0 0 3px black;
+				text-shadow: 0 0 3px black;
 			}
 			a, body {
 				color: white;
@@ -273,43 +273,50 @@ other
 			<span id="camid"></span>
 		</div>
 		<script src="main.js"></script>
-		<div style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
-    <label for="modelSelect" style="display:block; margin-bottom:10px; font-weight:bold; font-size: 14px;">Select Vehicle Scan:</label>
-    <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
-        <option value="" disabled selected>-- Choose a Model --</option>
-        </select>
-</div>
 
-<script>
-    // 1. Your list of models and URLs
-    const models = [
-        { name: "Chevrolet Blazer EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply" },
-        { name: "Chevrolet Equinox EV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply" },
-        { name: "Chevrolet Equinox EV (Hood Open - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open%20Video).ply" },
-        { name: "Chevrolet Equinox EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open).ply" },
-        { name: "Chevrolet Equinox EV (Lifted - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0819).ply" },
-        { name: "Chevrolet Equinox EV (Lifted)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted).ply" },
-        { name: "Chevrolet Equinox PPV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Closed).ply" },
-        { name: "Chevrolet Equinox PPV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Open).ply" },
-        { name: "Ford E-Transit (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Closed).ply" },
-        { name: "Ford E-Transit (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Open).ply" },
-        { name: "Ford E-Transit (Video Source)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply" }
-    ];
+        <div style="position: absolute; top: 50px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
+            <label for="modelSelect" style="display:block; margin-bottom:10px; font-weight:bold; font-size: 14px;">Select Vehicle Scan:</label>
+            <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
+                <option value="" disabled selected>-- Choose a Model --</option>
+            </select>
+        </div>
 
-    // 2. Populate the dropdown menu
-    const select = document.getElementById('modelSelect');
-    models.forEach(model => {
-        const option = document.createElement('option');
-        option.value = model.url;
-        option.textContent = model.name;
-        select.appendChild(option);
-    });
+        <script>
+            // =========================================================
+            //  CONFIGURATION SECTION: ADD NEW MODELS BELOW
+            // =========================================================
+            // To add a new model:
+            // 1. Copy the last line starting with { name: ... }
+            // 2. Paste it on a new line
+            // 3. Change the Name and the URL
+            // =========================================================
+            
+            const models = [
+                { name: "Chevrolet Blazer EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply" },
+                { name: "Chevrolet Equinox EV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply" },
+                { name: "Chevrolet Equinox EV (Hood Open - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open%20Video).ply" },
+                { name: "Chevrolet Equinox EV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open).ply" },
+                { name: "Chevrolet Equinox EV (Lifted - Video)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0819).ply" },
+                { name: "Chevrolet Equinox EV (Lifted)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted).ply" },
+                { name: "Chevrolet Equinox PPV (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Closed).ply" },
+                { name: "Chevrolet Equinox PPV (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Open).ply" },
+                { name: "Ford E-Transit (Hood Closed)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Closed).ply" },
+                { name: "Ford E-Transit (Hood Open)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Open).ply" },
+                { name: "Ford E-Transit (Video Source)", url: "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply" }
+            ];
 
-    // 3. Function to reload the page with the new model
-    function changeModel(url) {
-        // This reloads the page with the ?url= parameter
-        window.location.search = '?url=' + url;
-    }
-</script>
-	</body>
+            // Logic to populate list
+            const select = document.getElementById('modelSelect');
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.url;
+                option.textContent = model.name;
+                select.appendChild(option);
+            });
+
+            function changeModel(url) {
+                window.location.search = '?url=' + url;
+            }
+        </script>
+        </body>
 </html>
