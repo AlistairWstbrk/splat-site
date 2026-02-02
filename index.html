@@ -279,12 +279,13 @@ other
             <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
                 <option value="" disabled selected>Loading list...</option>
             </select>
+            <p style="margin-top: 10px; margin-bottom: 0; font-size: 12px; color: #ffcc00; max-width: 250px; line-height: 1.4;">
+                ⚠️ <b>Note:</b> Large files (~200MB).<br>Please allow 15-30s for download.
+            </p>
         </div>
 
         <script>
-            // This is now "Set it and forget it"
-            // The code automatically reads from models.json
-            
+            // Reads from models.json
             const select = document.getElementById('modelSelect');
 
             // 1. Fetch the JSON file
@@ -305,7 +306,7 @@ other
                         select.appendChild(option);
                     });
 
-                    // Run the Persistence Logic (must be done after models are loaded)
+                    // Run the Persistence Logic
                     checkPersistence();
                 })
                 .catch(error => {
@@ -313,12 +314,12 @@ other
                     select.innerHTML = '<option disabled>Error loading list</option>';
                 });
 
-            // 2. Function to reload the page
+            // 2. Reload function
             function changeModel(url) {
                 window.location.search = '?url=' + url;
             }
 
-            // 3. Persistence Check
+            // 3. Persistence Logic
             function checkPersistence() {
                 const currentParams = new URLSearchParams(window.location.search);
                 const rawUrl = currentParams.get('url');
