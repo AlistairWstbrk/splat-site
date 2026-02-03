@@ -58,8 +58,7 @@
         "name": "Ford E-Transit (Video Source)",
         "category": "Uncropped",
         "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply"
-    }
-    [
+    },
     {
         "name": "Chevrolet Blazer EV PPV (Hood Open)",
         "category": "Cropped",
