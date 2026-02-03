@@ -275,18 +275,27 @@ other
 		<script src="main.js"></script>
 
         <div style="position: absolute; top: 40px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
-            <label for="modelSelect" style="display:block; margin-bottom:10px; font-weight:bold; font-size: 14px;">Select Vehicle Scan:</label>
-            <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
-                <option value="" disabled selected>Loading list...</option>
+            
+            <label for="categorySelect" style="display:block; margin-bottom:5px; font-weight:bold; font-size: 14px; color:#aaa;">1. Filter by Type:</label>
+            <select id="categorySelect" style="padding: 8px; width: 250px; border-radius: 4px; border: none; margin-bottom: 15px;">
+                <option value="" disabled selected>Loading...</option>
             </select>
+
+            <label for="modelSelect" style="display:block; margin-bottom:5px; font-weight:bold; font-size: 14px; color:#aaa;">2. Select Scan:</label>
+            <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
+                <option value="" disabled selected>-- Select a Type first --</option>
+            </select>
+
             <p style="margin-top: 10px; margin-bottom: 0; font-size: 12px; color: #ffcc00; max-width: 250px; line-height: 1.4;">
                 ⚠️ <b>Note:</b> Large files (~200MB).<br>Please allow 15-30s for download.
             </p>
         </div>
 
         <script>
-            // Reads from models.json
-            const select = document.getElementById('modelSelect');
+            // Global variables to store our data
+            let allModels = [];
+            const categorySelect = document.getElementById('categorySelect');
+            const modelSelect = document.getElementById('modelSelect');
 
             // 1. Fetch the JSON file
             fetch('models.json')
@@ -294,32 +303,62 @@ other
                     if (!response.ok) throw new Error("Could not find models.json");
                     return response.json();
                 })
-                .then(models => {
-                    // Clear loading text
-                    select.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
-
-                    // Populate the list
-                    models.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.url;
-                        option.textContent = model.name;
-                        select.appendChild(option);
-                    });
-
-                    // Run the Persistence Logic
-                    checkPersistence();
+                .then(data => {
+                    allModels = data;
+                    initializeMenu();
                 })
                 .catch(error => {
                     console.error('Error loading models:', error);
-                    select.innerHTML = '<option disabled>Error loading list</option>';
+                    categorySelect.innerHTML = '<option disabled>Error loading data</option>';
                 });
 
-            // 2. Reload function
+            // 2. Initialize the Menus
+            function initializeMenu() {
+                // Get unique categories (e.g., "Uncropped", "Cropped")
+                // Uses a Set to ensure no duplicates
+                const categories = [...new Set(allModels.map(item => item.category || "Uncategorized"))];
+                
+                // Clear and populate Category dropdown
+                categorySelect.innerHTML = '<option value="" disabled selected>-- Select Type --</option>';
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categorySelect.appendChild(option);
+                });
+
+                // Add Event Listener for when Category changes
+                categorySelect.addEventListener('change', (e) => {
+                    updateModelDropdown(e.target.value);
+                });
+
+                // Run Persistence Logic (Restore selection if page was refreshed)
+                checkPersistence();
+            }
+
+            // 3. Update Model List based on Category
+            function updateModelDropdown(selectedCategory) {
+                // Filter models that match the category
+                const filteredModels = allModels.filter(m => (m.category || "Uncategorized") === selectedCategory);
+
+                // Clear Model dropdown
+                modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
+
+                // Populate Model dropdown
+                filteredModels.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.url;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+            }
+
+            // 4. Function to reload the page
             function changeModel(url) {
                 window.location.search = '?url=' + url;
             }
 
-            // 3. Persistence Logic
+            // 5. Smart Persistence Logic
             function checkPersistence() {
                 const currentParams = new URLSearchParams(window.location.search);
                 const rawUrl = currentParams.get('url');
@@ -327,14 +366,19 @@ other
                 if (rawUrl) {
                     const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
 
-                    for (let i = 0; i < select.options.length; i++) {
-                        const optionValue = select.options[i].value;
-                        const optionValueDecoded = decodeURIComponent(optionValue).trim();
+                    // Find which model belongs to this URL
+                    const matchedModel = allModels.find(m => decodeURIComponent(m.url).trim() === currentUrlDecoded);
 
-                        if (optionValueDecoded === currentUrlDecoded) {
-                            select.selectedIndex = i;
-                            break;
-                        }
+                    if (matchedModel) {
+                        // 1. Select the correct category
+                        const cat = matchedModel.category || "Uncategorized";
+                        categorySelect.value = cat;
+
+                        // 2. Force the model list to update immediately based on that category
+                        updateModelDropdown(cat);
+
+                        // 3. Select the correct model in the new list
+                        modelSelect.value = matchedModel.url;
                     }
                 }
             }
