@@ -59,4 +59,60 @@
         "category": "Uncropped",
         "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Vehicle%20Scans/Ford%20ETransit%20(Video).ply"
     }
+    [
+    {
+        "name": "Chevrolet Blazer EV PPV (Hood Open)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Blazer%20EV%20PPV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Closed)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Open Video)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open%20Video).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Hood Open)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Lifted Video DSC_0819)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0819).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Lifted Video DSC_0981)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted%20Video%20DSC_0981).ply"
+    },
+    {
+        "name": "Chevrolet Equinox EV (Lifted)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20EV%20(Lifted).ply"
+    },
+    {
+        "name": "Chevrolet Equinox PPV EV (Hood Closed)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Chevrolet Equinox PPV EV (Hood Open)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Chevrolet%20Equinox%20PPV%20EV%20(Hood%20Open).ply"
+    },
+    {
+        "name": "Ford ETransit (Hood Closed)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Closed).ply"
+    },
+    {
+        "name": "Ford ETransit (Hood Open)",
+        "category": "Cropped",
+        "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20Cropped%20Vehicle%20Scans/Ford%20ETransit%20(Hood%20Open).ply"
+    }
 ]
