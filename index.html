@@ -286,6 +286,10 @@ other
                 <option value="" disabled selected>-- Select a Type first --</option>
             </select>
 
+            <a id="downloadBtn" href="#" target="_blank" style="display:none; margin-top: 15px; background: #28a745; color: white; text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                Download .ply File
+            </a>
+
             <p style="margin-top: 10px; margin-bottom: 0; font-size: 12px; color: #ffcc00; max-width: 250px; line-height: 1.4;">
                 ⚠️ <b>Note:</b> Large files (~200MB).<br>Please allow 15-30s for download.
             </p>
@@ -296,6 +300,7 @@ other
             let allModels = [];
             const categorySelect = document.getElementById('categorySelect');
             const modelSelect = document.getElementById('modelSelect');
+            const downloadBtn = document.getElementById('downloadBtn');
 
             // 1. Fetch the JSON file
             fetch('models.json')
@@ -315,7 +320,6 @@ other
             // 2. Initialize the Menus
             function initializeMenu() {
                 // Get unique categories (e.g., "Uncropped", "Cropped")
-                // Uses a Set to ensure no duplicates
                 const categories = [...new Set(allModels.map(item => item.category || "Uncategorized"))];
                 
                 // Clear and populate Category dropdown
@@ -358,7 +362,7 @@ other
                 window.location.search = '?url=' + url;
             }
 
-            // 5. Smart Persistence Logic
+            // 5. Smart Persistence Logic (Updates Download Button)
             function checkPersistence() {
                 const currentParams = new URLSearchParams(window.location.search);
                 const rawUrl = currentParams.get('url');
@@ -379,6 +383,10 @@ other
 
                         // 3. Select the correct model in the new list
                         modelSelect.value = matchedModel.url;
+
+                        // 4. UPDATE DOWNLOAD BUTTON
+                        downloadBtn.href = matchedModel.url;
+                        downloadBtn.style.display = "block"; // Make it visible
                     }
                 }
             }
