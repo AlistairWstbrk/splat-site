@@ -1,3 +1,6 @@
+
+[This is a fork of the original spark repository, it has been edited to include a scan selector and a category selector for each scan] 
+
 # splat
 
 This is a WebGL implementation of a real-time renderer for [3D Gaussian Splatting for Real-Time Radiance Field Rendering](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/), a recently developed technique for taking a set of pictures and generating a photorealistic navigable 3D scene out of it. As it is essentially an extension of rendering point clouds, rendering scenes generated with this technique can be done very efficiently on ordinary graphics hardware- unlike prior comparable techniques such as NeRFs.
