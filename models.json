@@ -130,8 +130,8 @@
         "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Closed%20(New).ply"
     },
     {
-        "name": "Equinox Hood Open"
-        "category": "New Scans"
+        "name": "Equinox Hood Open",
+        "category": "New Scans",
         "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Open%20(New).ply"
-    },        
+    }        
 ]
