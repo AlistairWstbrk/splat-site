@@ -133,5 +133,25 @@
         "name": "Equinox Hood Open",
         "category": "New Scans",
         "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Open%20(New).ply"
-    }        
+    },
+    {
+    "name": "Chevy Blazer Hood Closed (Cropped)",
+    "category": "New Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Chevy%20Blazer%20Hood%20Closed%20(New)(Cropped).ply"
+  },
+  {
+    "name": "Chevy Blazer Hood Open (Cropped)",
+    "category": "New Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Chevy%20Blazer%20Hood%20Open%20(New)(Cropped).ply"
+  },
+  {
+    "name": "Equinox Hood Closed (Cropped)",
+    "category": "New Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Closed%20(New)(Cropped).ply"
+  },
+  {
+    "name": "Equinox Hood Open (Cropped)",
+    "category": "New Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Open%20(New)(Cropped).ply"
+  }
 ]
