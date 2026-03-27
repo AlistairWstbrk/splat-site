@@ -184,15 +184,6 @@ function getViewMatrix(camera) {
     ].flat();
     return camToWorld;
 }
-// function translate4(a, x, y, z) {
-//     return [
-//         ...a.slice(0, 12),
-//         a[0] * x + a[4] * y + a[8] * z + a[12],
-//         a[1] * x + a[5] * y + a[9] * z + a[13],
-//         a[2] * x + a[6] * y + a[10] * z + a[14],
-//         a[3] * x + a[7] * y + a[11] * z + a[15],
-//     ];
-// }
 
 function multiply4(a, b) {
     return [
@@ -295,6 +286,18 @@ function translate4(a, x, y, z) {
     ];
 }
 
+// Helper to project 3D points
+function multiplyMatrixAndPoint(matrix, point) {
+    let x = point[0], y = point[1], z = point[2], w = 1.0;
+    
+    let resX = (x * matrix[0]) + (y * matrix[4]) + (z * matrix[8])  + (w * matrix[12]);
+    let resY = (x * matrix[1]) + (y * matrix[5]) + (z * matrix[9])  + (w * matrix[13]);
+    let resZ = (x * matrix[2]) + (y * matrix[6]) + (z * matrix[10]) + (w * matrix[14]);
+    let resW = (x * matrix[3]) + (y * matrix[7]) + (z * matrix[11]) + (w * matrix[15]);
+    
+    return [resX, resY, resZ, resW];
+}
+
 function createWorker(self) {
     let buffer;
     let vertexCount = 0;
@@ -356,10 +359,6 @@ function createWorker(self) {
         var texdata_c = new Uint8Array(texdata.buffer);
         var texdata_f = new Float32Array(texdata.buffer);
 
-        // Here we convert from a .splat file buffer into a texture
-        // With a little bit more foresight perhaps this texture file
-        // should have been the native format as it'd be very easy to
-        // load it into webgl.
         for (let i = 0; i < vertexCount; i++) {
             // x, y, z
             texdata_f[8 * i + 0] = f_buffer[8 * i + 0];
@@ -542,11 +541,6 @@ function createWorker(self) {
         sizeIndex.sort((b, a) => sizeList[a] - sizeList[b]);
         console.timeEnd("sort");
 
-        // 6*4 + 4 + 4 = 8*4
-        // XYZ - Position (Float32)
-        // XYZ - Scale (Float32)
-        // RGBA - colors (uint8)
-        // IJKL - quaternion/rot (uint8)
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         const buffer = new ArrayBuffer(rowLength * vertexCount);
 
@@ -736,6 +730,7 @@ let defaultViewMatrix = [
     0.03, 6.55, 1,
 ];
 let viewMatrix = defaultViewMatrix;
+
 async function main() {
     let carousel = true;
     const params = new URLSearchParams(location.search);
@@ -744,30 +739,66 @@ async function main() {
         carousel = false;
     } catch (err) {}
 
-    // -----------------------------------------------------------------------
-    // NEW LOGIC: If no URL is provided, DO NOT LOAD ANYTHING.
-    // Show a message asking the user to select a file.
-    // -----------------------------------------------------------------------
     const urlParam = params.get("url");
 
     if (!urlParam) {
-        // Stop the spinner
         document.getElementById("spinner").style.display = "none";
-        // Show the message
         const msg = document.getElementById("message");
         msg.innerText = "Please select a vehicle scan from the menu.";
-        msg.style.color = "white"; // Make it white so it's readable
+        msg.style.color = "white"; 
         msg.style.background = "rgba(0,0,0,0.5)";
         msg.style.padding = "20px";
         msg.style.borderRadius = "10px";
-        return; // Stop execution here
+        return; 
     }
 
-    // If we have a URL, proceed as normal
+    // --- NEW: Define and Initialize Annotations ---
+    const vehicleAnnotations = [
+        { 
+            id: 'anno-demo-equinox', 
+            position: [1.2, -0.5, 2.3], // Change this to your desired 3D point (use KeyC trick to find it)
+            text: '🔍 Inspect Sensor Suite', 
+            targetUrlSnippet: 'Equinox' 
+        },
+        { 
+            id: 'anno-demo-hood', 
+            position: [-0.8, 0.2, 1.1], 
+            text: '⚙️ Powertrain Details', 
+            targetUrlSnippet: 'Hood Open' 
+        }
+    ];
+
+    let activeAnnotations = []; 
+
+    // Clear old annotations if they exist
+    document.querySelectorAll('.splat-annotation').forEach(el => el.remove());
+
+    // Create new annotations for the current vehicle
+    vehicleAnnotations.forEach(annoData => {
+        // Only load annotations that match the current scan URL
+        if (urlParam.includes(annoData.targetUrlSnippet)) {
+            let el = document.createElement('div');
+            el.className = 'splat-annotation';
+            el.innerText = annoData.text;
+            
+            el.onclick = () => {
+                alert("You clicked: " + annoData.text);
+            };
+            
+            document.body.appendChild(el);
+            
+            activeAnnotations.push({
+                element: el,
+                position: annoData.position
+            });
+        }
+    });
+    // ----------------------------------------------
+
     const url = new URL(urlParam);
     const req = await fetch(url, {
-        mode: "cors", // no-cors, *cors, same-origin
-        credentials: "omit", // include, *same-origin, omit
+        mode: "cors", 
+        credentials: "omit", 
     });
     console.log(req);
     if (req.status != 200)
@@ -820,9 +851,8 @@ async function main() {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS))
         console.error(gl.getProgramInfoLog(program));
 
-    gl.disable(gl.DEPTH_TEST); // Disable depth testing
+    gl.disable(gl.DEPTH_TEST); 
 
-    // Enable blending
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(
         gl.ONE_MINUS_DST_ALPHA,
@@ -837,7 +867,6 @@ async function main() {
     const u_focal = gl.getUniformLocation(program, "focal");
     const u_view = gl.getUniformLocation(program, "view");
 
-    // positions
     const triangleVertices = new Float32Array([-2, -2, 2, -2, 2, 2, -2, 2]);
     const vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -897,7 +926,6 @@ async function main() {
             }
         } else if (e.data.texdata) {
             const { texdata, texwidth, texheight } = e.data;
-            // console.log(texdata)
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texParameteri(
                 gl.TEXTURE_2D,
@@ -937,7 +965,6 @@ async function main() {
     let currentCameraIndex = 0;
 
     window.addEventListener("keydown", (e) => {
-        // if (document.activeElement != document.body) return;
         carousel = false;
         if (!activeKeys.includes(e.code)) activeKeys.push(e.code);
         if (/\d/.test(e.key)) {
@@ -966,6 +993,12 @@ async function main() {
             carousel = true;
             camid.innerText = "";
         }
+        // --- NEW: KeyC listener to help find coordinates ---
+        else if (e.code === "KeyC") {
+            let camWorld = invert4(viewMatrix);
+            console.log(`Current Camera Pos: [${camWorld[12].toFixed(2)}, ${camWorld[13].toFixed(2)}, ${camWorld[14].toFixed(2)}]`);
+        }
+        // ---------------------------------------------------
     });
     window.addEventListener("keyup", (e) => {
         activeKeys = activeKeys.filter((k) => k !== e.code);
@@ -995,16 +1028,12 @@ async function main() {
                     0,
                 );
             } else if (e.ctrlKey || e.metaKey) {
-                // inv = rotate4(inv,  (e.deltaX * scale) / innerWidth,  0, 0, 1);
-                // inv = translate4(inv,  0, (e.deltaY * scale) / innerHeight, 0);
-                // let preY = inv[13];
                 inv = translate4(
                     inv,
                     0,
                     0,
                     (-10 * (e.deltaY * scale)) / innerHeight,
                 );
-                // inv[13] = preY;
             } else {
                 let d = 4;
                 inv = translate4(inv, 0, 0, d);
@@ -1046,24 +1075,18 @@ async function main() {
             inv = rotate4(inv, dx, 0, 1, 0);
             inv = rotate4(inv, -dy, 1, 0, 0);
             inv = translate4(inv, 0, 0, -d);
-            // let postAngle = Math.atan2(inv[0], inv[10])
-            // inv = rotate4(inv, postAngle - preAngle, 0, 0, 1)
-            // console.log(postAngle)
             viewMatrix = invert4(inv);
 
             startX = e.clientX;
             startY = e.clientY;
         } else if (down == 2) {
             let inv = invert4(viewMatrix);
-            // inv = rotateY(inv, );
-            // let preY = inv[13];
             inv = translate4(
                 inv,
                 (-10 * (e.clientX - startX)) / innerWidth,
                 0,
                 (10 * (e.clientY - startY)) / innerHeight,
             );
-            // inv[13] = preY;
             viewMatrix = invert4(inv);
 
             startX = e.clientX;
@@ -1089,7 +1112,6 @@ async function main() {
                 startY = e.touches[0].clientY;
                 down = 1;
             } else if (e.touches.length === 2) {
-                // console.log('beep')
                 carousel = false;
                 startX = e.touches[0].clientX;
                 altX = e.touches[1].clientX;
@@ -1111,8 +1133,6 @@ async function main() {
 
                 let d = 4;
                 inv = translate4(inv, 0, 0, d);
-                // inv = translate4(inv,  -x, -y, -z);
-                // inv = translate4(inv,  x, y, z);
                 inv = rotate4(inv, dx, 0, 1, 0);
                 inv = rotate4(inv, -dy, 1, 0, 0);
                 inv = translate4(inv, 0, 0, -d);
@@ -1122,7 +1142,6 @@ async function main() {
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
             } else if (e.touches.length === 2) {
-                // alert('beep')
                 const dtheta =
                     Math.atan2(startY - altY, startX - altX) -
                     Math.atan2(
@@ -1146,15 +1165,9 @@ async function main() {
                         (startY + altY)) /
                     2;
                 let inv = invert4(viewMatrix);
-                // inv = translate4(inv,  0, 0, d);
                 inv = rotate4(inv, dtheta, 0, 0, 1);
-
                 inv = translate4(inv, -dx / innerWidth, -dy / innerHeight, 0);
-
-                // let preY = inv[13];
                 inv = translate4(inv, 0, 0, 3 * (1 - dscale));
-                // inv[13] = preY;
-
                 viewMatrix = invert4(inv);
 
                 startX = e.touches[0].clientX;
@@ -1218,10 +1231,8 @@ async function main() {
         }
         if (activeKeys.includes("ArrowLeft"))
             inv = translate4(inv, -0.03, 0, 0);
-        //
         if (activeKeys.includes("ArrowRight"))
             inv = translate4(inv, 0.03, 0, 0);
-        // inv = rotate4(inv, 0.01, 0, 1, 0);
         if (activeKeys.includes("KeyA")) inv = rotate4(inv, -0.01, 0, 1, 0);
         if (activeKeys.includes("KeyD")) inv = rotate4(inv, 0.01, 0, 1, 0);
         if (activeKeys.includes("KeyQ")) inv = rotate4(inv, 0.01, 0, 0, 1);
@@ -1234,11 +1245,10 @@ async function main() {
         for (let gamepad of gamepads) {
             if (!gamepad) continue;
 
-            const axisThreshold = 0.1; // Threshold to detect when the axis is intentionally moved
+            const axisThreshold = 0.1; 
             const moveSpeed = 0.06;
             const rotateSpeed = 0.02;
 
-            // Assuming the left stick controls translation (axes 0 and 1)
             if (Math.abs(gamepad.axes[0]) > axisThreshold) {
                 inv = translate4(inv, moveSpeed * gamepad.axes[0], 0, 0);
                 carousel = false;
@@ -1271,7 +1281,6 @@ async function main() {
                 carousel = false;
             }
 
-            // Assuming the right stick controls rotation (axes 2 and 3)
             if (Math.abs(gamepad.axes[2]) > axisThreshold) {
                 inv = rotate4(inv, rotateSpeed * gamepad.axes[2], 0, 1, 0);
                 carousel = false;
@@ -1366,6 +1375,32 @@ async function main() {
         let actualViewMatrix = invert4(inv2);
 
         const viewProj = multiply4(projectionMatrix, actualViewMatrix);
+        
+        // --- NEW: Update Annotation Positions ---
+        activeAnnotations.forEach(anno => {
+            let clipSpace = multiplyMatrixAndPoint(viewProj, anno.position);
+            let w = clipSpace[3];
+
+            if (w <= 0.1) {
+                anno.element.style.display = 'none';
+            } else {
+                let ndcX = clipSpace[0] / w;
+                let ndcY = clipSpace[1] / w;
+
+                if (ndcX < -1.2 || ndcX > 1.2 || ndcY < -1.2 || ndcY > 1.2) {
+                    anno.element.style.display = 'none';
+                } else {
+                    let screenX = (ndcX * 0.5 + 0.5) * innerWidth;
+                    let screenY = -(ndcY * 0.5 - 0.5) * innerHeight; 
+
+                    anno.element.style.display = 'block';
+                    anno.element.style.left = screenX + 'px';
+                    anno.element.style.top = screenY + 'px';
+                }
+            }
+        });
+        // ----------------------------------------
+
         worker.postMessage({ view: viewProj });
 
         const currentFps = 1000 / (now - lastFrame) || 0;
@@ -1427,7 +1462,6 @@ async function main() {
                 console.log("Loaded", Math.floor(splatData.length / rowLength));
 
                 if (isPly(splatData)) {
-                    // ply file magic header means it should be handled differently
                     worker.postMessage({ ply: splatData.buffer, save: true });
                 } else {
                     worker.postMessage({
@@ -1483,7 +1517,6 @@ async function main() {
     }
     if (!stopLoading) {
         if (isPly(splatData)) {
-            // ply file magic header means it should be handled differently
             worker.postMessage({ ply: splatData.buffer, save: false });
         } else {
             worker.postMessage({
