@@ -187,31 +187,83 @@
 			}
 
             /* --- NEW ANNOTATION CSS --- */
-            .splat-annotation {
-                position: absolute;
-                transform: translate(-50%, -50%); /* Centers the box on the coordinate */
-                background: rgba(0, 0, 0, 0.75);
-                color: white;
-                padding: 8px 14px;
-                border-radius: 6px;
-                border: 1px solid #444;
-                font-family: sans-serif;
-                font-size: 13px;
-                font-weight: bold;
-                pointer-events: auto; /* Allows clicking and hovering */
-                cursor: pointer;
-                transition: background 0.2s, transform 0.2s, border-color 0.2s;
-                display: none; /* Hidden by default if behind camera */
-                z-index: 100;
-                white-space: nowrap;
-                backdrop-filter: blur(4px);
-            }
+.splat-annotation {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    font-family: sans-serif;
+    font-size: 13px;
+    pointer-events: auto;
+    cursor: pointer;
+    /* transition 'all' allows it to smoothly animate size changes */
+    transition: all 0.3s ease; 
+    display: none; 
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    width: max-content;
+    max-width: 150px;
+    overflow: hidden;
+}
 
-            .splat-annotation:hover {
-                background: rgba(0, 0, 0, 0.95);
-                border-color: #ffcc00;
-                transform: translate(-50%, -50%) scale(1.05);
-            }
+.splat-annotation:hover {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: #ffcc00;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* --- NEW: Expanded State Styling --- */
+.splat-annotation.expanded {
+    max-width: 300px; /* How wide the box gets when clicked */
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.95);
+    border-color: #ffcc00;
+    cursor: default; 
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.splat-annotation .anno-title {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.splat-annotation.expanded .anno-title {
+    white-space: normal;
+    border-bottom: 1px solid #666;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.splat-annotation .anno-details {
+    display: none; /* Hidden by default */
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ddd;
+}
+
+.splat-annotation.expanded .anno-details {
+    display: block; /* Shown when clicked */
+}
+
+/* A little X button to close it */
+.splat-annotation .close-btn {
+    display: none;
+    float: right;
+    cursor: pointer;
+    color: #aaa;
+    margin-left: 10px;
+}
+.splat-annotation.expanded .close-btn {
+    display: inline;
+}
+.splat-annotation .close-btn:hover {
+    color: #fff;
+}
             /* -------------------------- */
 		</style>
 	</head>
