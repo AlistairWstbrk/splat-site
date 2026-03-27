@@ -757,9 +757,9 @@ async function main() {
         { 
             id: 'anno-equinox-cropped', 
             // Shifted Y from -0.72 to -0.85 (tweak this if it moved the wrong direction!)
-            position: [0.47, -0.85, -0.53], 
-            title: '🔍 Inverter Module', 
-            description: 'This is the main power inverter. It converts DC power from the high-voltage battery into AC power for the electric drive motors. <br><br><b>Note:</b> Ensure lockout/tagout procedures are followed before servicing.',
+            position: [0.47, -0.60, -0.53], 
+            title: '⚡ Engine Bay', 
+            description: 'This area holds the main electric motor and power systems that drive the car.',
             targetUrlSnippet: 'Equinox%20Hood%20Open%20(New)(Cropped)' 
         }
     ];
