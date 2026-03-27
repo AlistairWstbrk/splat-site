@@ -752,12 +752,14 @@ async function main() {
         return; 
     }
 
-    // --- NEW: Define and Initialize Annotations ---
+// --- NEW: Define and Initialize Annotations ---
     const vehicleAnnotations = [
         { 
             id: 'anno-equinox-cropped', 
-            position: [0.47, -0.72, -0.53], 
-            text: '🔍 Inspect Here', 
+            // Shifted Y from -0.72 to -0.85 (tweak this if it moved the wrong direction!)
+            position: [0.47, -0.85, -0.53], 
+            title: '🔍 Inverter Module', 
+            description: 'This is the main power inverter. It converts DC power from the high-voltage battery into AC power for the electric drive motors. <br><br><b>Note:</b> Ensure lockout/tagout procedures are followed before servicing.',
             targetUrlSnippet: 'Equinox%20Hood%20Open%20(New)(Cropped)' 
         }
     ];
@@ -773,10 +775,30 @@ async function main() {
         if (urlParam.includes(annoData.targetUrlSnippet) || urlParam.includes(decodeURIComponent(annoData.targetUrlSnippet))) {
             let el = document.createElement('div');
             el.className = 'splat-annotation';
-            el.innerText = annoData.text;
             
-            el.onclick = () => {
-                alert("You clicked: " + annoData.text);
+            // Build the HTML for the expanding box
+            el.innerHTML = `
+                <div class="close-btn">✖</div>
+                <div class="anno-title">${annoData.title}</div>
+                <div class="anno-details">${annoData.description}</div>
+            `;
+            
+            // Handle clicking
+            el.onclick = (e) => {
+                // If they clicked the 'X', close the box
+                if (e.target.classList.contains('close-btn')) {
+                    el.classList.remove('expanded');
+                    e.stopPropagation(); // Stop the click from re-opening the box
+                    return;
+                }
+                
+                // Otherwise, expand the box
+                if (!el.classList.contains('expanded')) {
+                    // Optional: Close any other open annotations first
+                    document.querySelectorAll('.splat-annotation').forEach(a => a.classList.remove('expanded'));
+                    
+                    el.classList.add('expanded');
+                }
             };
             
             document.body.appendChild(el);
