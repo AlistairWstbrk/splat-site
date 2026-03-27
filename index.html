@@ -185,6 +185,33 @@
 			body.nohf #progress, body.nohf .cube-face {
 				background: #ff9d0d;
 			}
+
+			/* --- NEW: Hovering Annotation CSS --- */
+			.splat-annotation {
+				position: absolute;
+				transform: translate(-50%, -50%); /* Centers the box on the coordinate */
+				background: rgba(0, 0, 0, 0.75);
+				color: white;
+				padding: 8px 14px;
+				border-radius: 6px;
+				border: 1px solid #444;
+				font-family: sans-serif;
+				font-size: 13px;
+				font-weight: bold;
+				pointer-events: auto; /* Allows clicking and hovering */
+				cursor: pointer;
+				transition: background 0.2s, transform 0.2s, border-color 0.2s;
+				display: none; /* Hidden by default if behind camera */
+				z-index: 100;
+				white-space: nowrap;
+				backdrop-filter: blur(4px);
+			}
+
+			.splat-annotation:hover {
+				background: rgba(0, 0, 0, 0.95);
+				border-color: #ffcc00;
+				transform: translate(-50%, -50%) scale(1.05);
+			}
 		</style>
 	</head>
 	<body>
@@ -239,6 +266,7 @@ other
 - press 0-9 to switch to one of the pre-loaded camera views
 - press '-' or '+'key to cycle loaded cameras
 - press p to resume default animation
+- press c to log current camera coordinates (for placing text boxes)
 - drag and drop .ply file to convert to .splat
 - drag and drop cameras.json to load cameras
 </div>
