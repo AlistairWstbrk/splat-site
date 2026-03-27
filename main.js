@@ -755,16 +755,10 @@ async function main() {
     // --- NEW: Define and Initialize Annotations ---
     const vehicleAnnotations = [
         { 
-            id: 'anno-demo-equinox', 
-            position: [1.2, -0.5, 2.3], // Change this to your desired 3D point (use KeyC trick to find it)
-            text: '🔍 Inspect Sensor Suite', 
-            targetUrlSnippet: 'Equinox' 
-        },
-        { 
-            id: 'anno-demo-hood', 
-            position: [-0.8, 0.2, 1.1], 
-            text: '⚙️ Powertrain Details', 
-            targetUrlSnippet: 'Hood Open' 
+            id: 'anno-equinox-cropped', 
+            position: [0.47, -0.72, -0.53], 
+            text: '🔍 Inspect Here', 
+            targetUrlSnippet: 'Equinox%20Hood%20Open%20(New)(Cropped)' 
         }
     ];
 
@@ -776,7 +770,7 @@ async function main() {
     // Create new annotations for the current vehicle
     vehicleAnnotations.forEach(annoData => {
         // Only load annotations that match the current scan URL
-        if (urlParam.includes(annoData.targetUrlSnippet)) {
+        if (urlParam.includes(annoData.targetUrlSnippet) || urlParam.includes(decodeURIComponent(annoData.targetUrlSnippet))) {
             let el = document.createElement('div');
             el.className = 'splat-annotation';
             el.innerText = annoData.text;
