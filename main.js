@@ -766,38 +766,40 @@ async function main() {
 
     let activeAnnotations = []; 
 
-    // Clear old annotations if they exist
-    document.querySelectorAll('.splat-annotation').forEach(el => el.remove());
+// Clear old markers if they exist
+    document.querySelectorAll('.splat-marker').forEach(el => el.remove());
 
     // Create new annotations for the current vehicle
     vehicleAnnotations.forEach(annoData => {
         // Only load annotations that match the current scan URL
         if (urlParam.includes(annoData.targetUrlSnippet) || urlParam.includes(decodeURIComponent(annoData.targetUrlSnippet))) {
-            let el = document.createElement('div');
-            el.className = 'splat-annotation';
             
-            // Build the HTML for the expanding box
+            // Create the invisible anchor wrapper
+            let el = document.createElement('div');
+            el.className = 'splat-marker'; 
+            
+            // Build the Red Dot and the Text Box inside the anchor
             el.innerHTML = `
-                <div class="close-btn">✖</div>
-                <div class="anno-title">${annoData.title}</div>
-                <div class="anno-details">${annoData.description}</div>
+                <div class="red-dot"></div>
+                <div class="splat-annotation">
+                    <div class="close-btn">✖</div>
+                    <div class="anno-title">${annoData.title}</div>
+                    <div class="anno-details">${annoData.description}</div>
+                </div>
             `;
             
-            // Handle clicking
-            el.onclick = (e) => {
-                // If they clicked the 'X', close the box
+            // Handle clicking on the actual text card
+            let card = el.querySelector('.splat-annotation');
+            card.onclick = (e) => {
                 if (e.target.classList.contains('close-btn')) {
-                    el.classList.remove('expanded');
-                    e.stopPropagation(); // Stop the click from re-opening the box
+                    card.classList.remove('expanded');
+                    e.stopPropagation(); 
                     return;
                 }
-                
-                // Otherwise, expand the box
-                if (!el.classList.contains('expanded')) {
-                    // Optional: Close any other open annotations first
+                if (!card.classList.contains('expanded')) {
+                    // Close other open boxes first
                     document.querySelectorAll('.splat-annotation').forEach(a => a.classList.remove('expanded'));
-                    
-                    el.classList.add('expanded');
+                    card.classList.add('expanded');
                 }
             };
             
