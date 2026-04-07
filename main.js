@@ -778,7 +778,7 @@ async function main() {
             let el = document.createElement('div');
             el.className = 'splat-marker'; 
             
-            // Build the Red Dot and the Text Box inside the anchor
+            // Build the HTML for the Dot and the Text Box
             el.innerHTML = `
                 <div class="red-dot"></div>
                 <div class="splat-annotation">
@@ -788,19 +788,24 @@ async function main() {
                 </div>
             `;
             
-            // Handle clicking on the actual text card
-            let card = el.querySelector('.splat-annotation');
-            card.onclick = (e) => {
-                if (e.target.classList.contains('close-btn')) {
-                    card.classList.remove('expanded');
-                    e.stopPropagation(); 
-                    return;
-                }
-                if (!card.classList.contains('expanded')) {
-                    // Close other open boxes first
-                    document.querySelectorAll('.splat-annotation').forEach(a => a.classList.remove('expanded'));
-                    card.classList.add('expanded');
-                }
+            // Grab the buttons
+            let dot = el.querySelector('.red-dot');
+            let closeBtn = el.querySelector('.close-btn');
+
+            // When the RED DOT is clicked, pop open the box
+            dot.onclick = (e) => {
+                // Close all other open markers first so the screen doesn't get cluttered
+                document.querySelectorAll('.splat-marker').forEach(m => m.classList.remove('active'));
+                
+                // Add the 'active' class to trigger the CSS spring animation
+                el.classList.add('active');
+                e.stopPropagation(); 
+            };
+
+            // When the X is clicked, close the box
+            closeBtn.onclick = (e) => {
+                el.classList.remove('active');
+                e.stopPropagation();
             };
             
             document.body.appendChild(el);
