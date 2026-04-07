@@ -1,5 +1,5 @@
 
-[This is a fork of the original spark repository, it has been edited to include a scan selector and a category selector for each scan] 
+[This is a fork of the original spark repository, it has been edited to include a scan selector and a category selector for each scan, Currently a work in progress for a research project] 
 
 # splat
 
