@@ -202,15 +202,25 @@
     background: #ff2a2a;
     border: 2px solid white;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
     box-shadow: 0 0 10px rgba(255, 42, 42, 0.9);
     pointer-events: auto;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    /* Smooth fade and shrink animation */
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.splat-marker .anchor-point:hover {
+/* Hover effect only works when the dot is NOT active */
+.splat-marker:not(.active) .anchor-point:hover {
     transform: translate(-50%, -50%) scale(1.3);
+}
+
+/* --- NEW: Hide the dot when the window is open! --- */
+.splat-marker.active .anchor-point {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* 3. The Dynamic Connecting Line */
@@ -220,19 +230,19 @@
     top: 0;
     height: 2px;
     background: #ffcc00;
-    transform-origin: left center; /* Pivots exactly from the red dot */
+    transform-origin: left center; /* Pivots exactly from the anchor point */
     display: none; /* Hidden until clicked */
     pointer-events: none;
     box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
 }
 
-/* The Arrowhead on the line pointing AT the red dot */
+/* The Arrowhead on the line pointing AT the coordinate */
 .splat-marker .connecting-line::before {
     content: '';
     position: absolute;
     left: 0; 
     top: -4px; /* Centers the 10px arrow on the 2px line */
-    /* CSS Triangle pointing left (towards the dot) */
+    /* CSS Triangle pointing left (towards the coordinate) */
     border-right: 12px solid #ffcc00; 
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
