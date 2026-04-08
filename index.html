@@ -186,7 +186,7 @@
 				background: #ff9d0d;
 			}
 
-/* 1. The invisible anchor */
+/* 1. The invisible wrapper anchored exactly at the 3D coordinate */
 .splat-marker {
     position: absolute;
     display: none;
@@ -194,50 +194,56 @@
     pointer-events: none;
 }
 
-/* 2. The glowing red dot (Morphs into the line!) */
-.splat-marker .red-dot {
+/* 2. The Anchor Dot */
+.splat-marker .anchor-point {
     position: absolute;
-    bottom: 0; 
-    left: 50%;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background: #ff2a2a;
     border: 2px solid white;
     border-radius: 50%;
-    /* Centers the circle perfectly over the 3D coordinate */
-    transform: translate(-50%, 50%);
+    transform: translate(-50%, -50%);
     box-shadow: 0 0 10px rgba(255, 42, 42, 0.9);
     pointer-events: auto;
     cursor: pointer;
-    /* Smoothly animate the morphing shape */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s ease;
 }
 
-.splat-marker:not(.active) .red-dot:hover {
-    transform: translate(-50%, 50%) scale(1.3);
+.splat-marker .anchor-point:hover {
+    transform: translate(-50%, -50%) scale(1.3);
 }
 
-/* ACTIVE STATE: Dot shoots up into a golden line */
-.splat-marker.active .red-dot {
-    width: 3px;          /* Thins out into a line */
-    height: 45px;        /* Shoots upward */
-    background: #ffcc00; /* Turns gold to match the box */
-    border: 0px solid transparent; 
-    border-radius: 2px;  /* Loses the perfect circle shape */
-    /* Keeps the bottom anchored to the 3D coordinate while it grows up */
-    transform: translate(-50%, 0); 
-    box-shadow: 0 0 8px rgba(255, 204, 0, 0.8);
-    cursor: default;
+/* 3. The Dynamic Connecting Line */
+.splat-marker .connecting-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    background: #ffcc00;
+    transform-origin: left center; /* Pivots exactly from the red dot */
+    display: none; /* Hidden until clicked */
+    pointer-events: none;
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
 }
 
-/* 3. The Text Box */
+/* The Arrowhead on the line pointing AT the red dot */
+.splat-marker .connecting-line::before {
+    content: '';
+    position: absolute;
+    left: 0; 
+    top: -4px; /* Centers the 10px arrow on the 2px line */
+    /* CSS Triangle pointing left (towards the dot) */
+    border-right: 12px solid #ffcc00; 
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+/* 4. The Draggable Text Box */
 .splat-annotation {
     position: absolute;
-    bottom: 55px; /* Sits exactly on top of the new 45px line */
-    left: 0;
-    transform: translateX(-50%) translateY(20px) scale(0.8);
+    /* Centered on its JavaScript coordinates */
+    transform: translate(-50%, -50%) scale(0);
     opacity: 0;
-    transform-origin: bottom center;
     background: rgba(0, 0, 0, 0.95);
     color: white;
     padding: 15px;
@@ -249,40 +255,32 @@
     width: max-content;
     max-width: 300px;
     
-    /* Delay the box appearing until the line finishes shooting up (0.15s delay) */
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.15s, opacity 0.3s ease 0.15s;
+    /* Smooth fade in/out, but DO NOT transition position (prevents drag lag) */
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Dragging cursors */
+    cursor: grab;
 }
 
-/* The arrow head connecting the box to the line */
-.splat-annotation::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 10px solid #ffcc00; 
+.splat-annotation:active {
+    cursor: grabbing;
 }
 
-/* Active State for the Box */
+/* 5. Active States (When open) */
 .splat-marker.active .splat-annotation {
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
     pointer-events: auto;
 }
 
-/* Inner text styles */
-.splat-annotation .anno-title { font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 6px; margin-bottom: 8px; font-size: 15px; white-space: normal; }
-.splat-annotation .anno-details { font-weight: normal; font-size: 13px; line-height: 1.5; color: #ddd; }
-.splat-annotation .close-btn { float: right; cursor: pointer; color: #aaa; margin-left: 10px; }
-.splat-annotation .close-btn:hover { color: #fff; }
-.splat-annotation .close-btn { 
-    float: right; 
-    cursor: pointer; 
-    color: #aaa; 
-    margin-left: 10px; 
+.splat-marker.active .connecting-line {
+    display: block;
 }
+
+/* Inner text styles */
+.splat-annotation .anno-title { font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 6px; margin-bottom: 8px; font-size: 15px; white-space: normal; pointer-events: none; }
+.splat-annotation .anno-details { font-weight: normal; font-size: 13px; line-height: 1.5; color: #ddd; pointer-events: none; }
+.splat-annotation .close-btn { float: right; cursor: pointer; color: #aaa; margin-left: 10px; pointer-events: auto; }
 .splat-annotation .close-btn:hover { color: #fff; }
 			
 		</style>
