@@ -774,13 +774,13 @@ async function main() {
         // Only load annotations that match the current scan URL
         if (urlParam.includes(annoData.targetUrlSnippet) || urlParam.includes(decodeURIComponent(annoData.targetUrlSnippet))) {
             
-            // Create the invisible anchor wrapper
             let el = document.createElement('div');
             el.className = 'splat-marker'; 
             
-            // Build the HTML for the Dot and the Text Box
+            // Build the HTML for the Dot, Line, and Box
             el.innerHTML = `
-                <div class="red-dot"></div>
+                <div class="anchor-point"></div>
+                <div class="connecting-line"></div>
                 <div class="splat-annotation">
                     <div class="close-btn">✖</div>
                     <div class="anno-title">${annoData.title}</div>
@@ -788,25 +788,92 @@ async function main() {
                 </div>
             `;
             
-            // Grab the buttons
-            let dot = el.querySelector('.red-dot');
+            let dot = el.querySelector('.anchor-point');
+            let box = el.querySelector('.splat-annotation');
+            let line = el.querySelector('.connecting-line');
             let closeBtn = el.querySelector('.close-btn');
 
-            // When the RED DOT is clicked, pop open the box
+            // --- DRAGGING LOGIC ---
+            let isDragging = false;
+            let startMouseX = 0, startMouseY = 0;
+            
+            // Where the box pops up by default (60px right, 90px up)
+            const defaultOffsetX = 60;
+            const defaultOffsetY = -90;
+            let offsetX = defaultOffsetX;
+            let offsetY = defaultOffsetY;
+
+            // Calculates the length and rotation of the line to connect the dot to the box
+            function updateLine() {
+                let length = Math.hypot(offsetX, offsetY); // Pythagorean theorem
+                let angle = Math.atan2(offsetY, offsetX);  // Get angle in radians
+                line.style.width = length + 'px';
+                line.style.transform = `rotate(${angle}rad)`;
+            }
+
+            // Click the Red Dot to Open
             dot.onclick = (e) => {
-                // Close all other open markers first so the screen doesn't get cluttered
+                // Close others
                 document.querySelectorAll('.splat-marker').forEach(m => m.classList.remove('active'));
                 
-                // Add the 'active' class to trigger the CSS spring animation
+                // Reset this box to default position
+                offsetX = defaultOffsetX; 
+                offsetY = defaultOffsetY;
+                box.style.left = offsetX + 'px';
+                box.style.top = offsetY + 'px';
+                updateLine();
+                
+                // Show it
                 el.classList.add('active');
                 e.stopPropagation(); 
             };
 
-            // When the X is clicked, close the box
+            // Click the X to Close
             closeBtn.onclick = (e) => {
                 el.classList.remove('active');
                 e.stopPropagation();
             };
+
+            // Mouse down on the Text Box (Start Drag)
+            box.onmousedown = (e) => {
+                if(e.target.classList.contains('close-btn')) return; // Let the X button work
+                isDragging = true;
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
+                e.preventDefault(); // Stop text from highlighting while dragging
+            };
+
+            // Mouse move anywhere on screen (While Dragging)
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                // Calculate how far the mouse moved
+                let dx = e.clientX - startMouseX;
+                let dy = e.clientY - startMouseY;
+                
+                // Apply it to the box's offset
+                offsetX += dx;
+                offsetY += dy;
+                
+                // Update start position for next frame
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
+                
+                // Move the box and stretch the line
+                box.style.left = offsetX + 'px';
+                box.style.top = offsetY + 'px';
+                updateLine();
+            });
+
+            // Mouse up anywhere on screen (Stop Drag)
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Set initial state
+            box.style.left = offsetX + 'px';
+            box.style.top = offsetY + 'px';
+            updateLine();
             
             document.body.appendChild(el);
             
