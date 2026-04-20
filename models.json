@@ -153,5 +153,25 @@
     "name": "Equinox Hood Open (Cropped)",
     "category": "New Scans",
     "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/3DGS%20.ply%20New%20Vehicle%20Scans/Equinox%20Hood%20Open%20(New)(Cropped).ply"
+  },
+  {
+    "name": "Chevy Blazer Hood Closed",
+    "category": "Mipmap Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Mipmap%20Scans/chevyblazerhoodclosed.ply"
+  },
+  {
+    "name": "Chevy Blazer Hood Open",
+    "category": "Mipmap Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Mipmap%20Scans/chevyblazerhoodopen.ply"
+  },
+  {
+    "name": "Equinox Hood Closed",
+    "category": "Mipmap Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Mipmap%20Scans/equinoxhoodclosed.ply"
+  },
+  {
+    "name": "Equinox Hood Open",
+    "category": "Mipmap Scans",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Mipmap%20Scans/equinoxhoodopen.ply"
   }
 ]
