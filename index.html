@@ -1,504 +1,213 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-	<head>
-		<title>WebGL Gaussian Splat Viewer</title>
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
-		/>
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta
-			name="apple-mobile-web-app-status-bar-style"
-			content="black-translucent"
-		/>
-		<style>
-			body {
-				overflow: hidden;
-				margin: 0;
-				height: 100vh;
-				width: 100vw;
-				font-family: sans-serif;
-				background: black;
-				text-shadow: 0 0 3px black;
-			}
-			a, body {
-				color: white;
-			}
-			#info {
-				z-index: 100;
-				position: absolute;
-				top: 10px;
-				left: 15px;
-			}
-			h3 {
-				margin: 5px 0;
-			}
-			p {
-				margin: 5px 0;
-				font-size: small;
-			}
-
-			.cube-wrapper {
-				transform-style: preserve-3d;
-			}
-
-			.cube {
-				transform-style: preserve-3d;
-				transform: rotateX(45deg) rotateZ(45deg);
-				animation: rotation 2s infinite;
-			}
-
-			.cube-faces {
-				transform-style: preserve-3d;
-				height: 80px;
-				width: 80px;
-				position: relative;
-				transform-origin: 0 0;
-				transform: translateX(0) translateY(0) translateZ(-40px);
-			}
-
-			.cube-face {
-				position: absolute;
-				inset: 0;
-				background: #0017ff;
-				border: solid 1px #ffffff;
-			}
-			.cube-face.top {
-				transform: translateZ(80px);
-			}
-			.cube-face.front {
-				transform-origin: 0 50%;
-				transform: rotateY(-90deg);
-			}
-			.cube-face.back {
-				transform-origin: 0 50%;
-				transform: rotateY(-90deg) translateZ(-80px);
-			}
-			.cube-face.right {
-				transform-origin: 50% 0;
-				transform: rotateX(-90deg) translateY(-80px);
-			}
-			.cube-face.left {
-				transform-origin: 50% 0;
-				transform: rotateX(-90deg) translateY(-80px) translateZ(80px);
-			}
-
-			@keyframes rotation {
-				0% {
-					transform: rotateX(45deg) rotateY(0) rotateZ(45deg);
-					animation-timing-function: cubic-bezier(
-						0.17,
-						0.84,
-						0.44,
-						1
-					);
-				}
-				50% {
-					transform: rotateX(45deg) rotateY(0) rotateZ(225deg);
-					animation-timing-function: cubic-bezier(
-						0.76,
-						0.05,
-						0.86,
-						0.06
-					);
-				}
-				100% {
-					transform: rotateX(45deg) rotateY(0) rotateZ(405deg);
-					animation-timing-function: cubic-bezier(
-						0.17,
-						0.84,
-						0.44,
-						1
-					);
-				}
-			}
-
-			.scene,
-			#message {
-				position: absolute;
-				display: flex;
-				top: 0;
-				right: 0;
-				left: 0;
-				bottom: 0;
-				z-index: 2;
-				height: 100%;
-				width: 100%;
-				align-items: center;
-				justify-content: center;
-			}
-			#message {
-				font-weight: bold;
-				font-size: large;
-				color: red;
-				pointer-events: none;
-			}
-
-			details {
-				font-size: small;
-
-			}
-
-			#progress {
-				position: absolute;
-				top: 0;
-				height: 5px;
-				background: blue;
-				z-index: 99;
-				transition: width 0.1s ease-in-out;
-			}
-
-			#quality {
-				position: absolute;
-				bottom: 10px;
-				z-index: 999;
-				right: 10px;
-			}
-
-			#caminfo {
-				position: absolute;
-				top: 10px;
-				z-index: 999;
-				right: 10px;
-			}
-			#canvas {
-				display: block;
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				touch-action: none;
-			}
-
-			#instructions {
-				background: rgba(0,0,0,0.6);
-				white-space: pre-wrap;
-				padding: 10px;
-				border-radius: 10px;
-				font-size: x-small;
-			}
-			body.nohf .nohf {
-				display: none;
-			}
-			body.nohf #progress, body.nohf .cube-face {
-				background: #ff9d0d;
-			}
-
-/* 1. The invisible wrapper anchored exactly at the 3D coordinate */
-.splat-marker {
-    position: absolute;
-    display: none;
-    z-index: 100;
-    pointer-events: none;
-}
-
-/* 2. The Anchor Dot */
-.splat-marker .anchor-point {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #ff2a2a;
-    border: 2px solid white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-    box-shadow: 0 0 10px rgba(255, 42, 42, 0.9);
-    pointer-events: auto;
-    cursor: pointer;
-    /* Smooth fade and shrink animation */
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-/* Hover effect only works when the dot is NOT active */
-.splat-marker:not(.active) .anchor-point:hover {
-    transform: translate(-50%, -50%) scale(1.3);
-}
-
-/* --- NEW: Hide the dot when the window is open! --- */
-.splat-marker.active .anchor-point {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* 3. The Dynamic Connecting Line */
-.splat-marker .connecting-line {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 2px;
-    background: #ffcc00;
-    transform-origin: left center; /* Pivots exactly from the anchor point */
-    display: none; /* Hidden until clicked */
-    pointer-events: none;
-    box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
-}
-
-/* The Arrowhead on the line pointing AT the coordinate */
-.splat-marker .connecting-line::before {
-    content: '';
-    position: absolute;
-    left: 0; 
-    top: -4px; /* Centers the 10px arrow on the 2px line */
-    /* CSS Triangle pointing left (towards the coordinate) */
-    border-right: 12px solid #ffcc00; 
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-}
-
-/* 4. The Draggable Text Box */
-.splat-annotation {
-    position: absolute;
-    /* Centered on its JavaScript coordinates */
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #ffcc00;
-    font-family: sans-serif;
-    pointer-events: none;
-    backdrop-filter: blur(4px);
-    width: max-content;
-    max-width: 300px;
+<div class="streamlit-sidebar">
+    <h2 style="margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #4B4C53; padding-bottom: 10px;">EV Training Explorer</h2>
     
-    /* Smooth fade in/out, but DO NOT transition position (prevents drag lag) */
-    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
-    /* Dragging cursors */
-    cursor: grab;
-}
+    <div class="sidebar-section">
+        <label for="categorySelect">1. Filter by Type</label>
+        <select id="categorySelect" class="st-input">
+            <option value="" disabled selected>Loading...</option>
+        </select>
 
-.splat-annotation:active {
-    cursor: grabbing;
-}
+        <label for="modelSelect">2. Select Scan</label>
+        <select id="modelSelect" class="st-input" onchange="changeModel(this.value)">
+            <option value="" disabled selected>-- Select a Type first --</option>
+        </select>
 
-/* 5. Active States (When open) */
-.splat-marker.active .splat-annotation {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-    pointer-events: auto;
-}
+        <a id="downloadBtn" href="#" target="_blank" class="st-button st-button-secondary" style="display:none; text-decoration: none; text-align: center;">
+            ⬇️ Download .ply File
+        </a>
+        <p style="margin-top: 8px; font-size: 11px; color: #ffbd45; line-height: 1.3;">
+            ⚠️ <b>Note:</b> Large files (~200MB). Allow 15-30s.
+        </p>
+    </div>
 
-.splat-marker.active .connecting-line {
-    display: block;
-}
+    <hr style="border-top: 1px solid #4B4C53; border-bottom: none; margin: 20px 0;">
 
-/* Inner text styles */
-.splat-annotation .anno-title { font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 6px; margin-bottom: 8px; font-size: 15px; white-space: normal; pointer-events: none; }
-.splat-annotation .anno-details { font-weight: normal; font-size: 13px; line-height: 1.5; color: #ddd; pointer-events: none; }
-.splat-annotation .close-btn { float: right; cursor: pointer; color: #aaa; margin-left: 10px; pointer-events: auto; }
-.splat-annotation .close-btn:hover { color: #fff; }
-			
-		</style>
-	</head>
-	<body>
-		<script>
-			if(location.host.includes('hf.space')) document.body.classList.add('nohf');
-		</script>
-		<div id="info">
-			<h3 class="nohf">WebGL 3D Gaussian Splat Viewer</h3>
-			<p>
-			<small class="nohf">
-				By <a href="https://twitter.com/antimatter15">Kevin Kwok</a>.
-				Code on
-				<a href="https://github.com/antimatter15/splat">Github</a
-				>.
-			</small>
-		</p>
-
-			<details>
-			<summary>Use mouse or arrow keys to navigate.</summary>
-
-<div id="instructions">movement (arrow keys)
-- left/right arrow keys to strafe side to side
-- up/down arrow keys to move forward/back
-- space to jump
-
-camera angle (wasd)
-- a/d to turn camera left/right
-- w/s to tilt camera up/down
-- q/e to roll camera counterclockwise/clockwise
-- i/k and j/l to orbit
-
-trackpad
-- scroll up/down/left/right to orbit
-- pinch to move forward/back
-- ctrl key + scroll to move forward/back
-- shift + scroll to move up/down or strafe
-
-mouse
-- click and drag to orbit
-- right click (or ctrl/cmd key) and drag up/down to move
-
-touch (mobile)
-- one finger to orbit
-- two finger pinch to move forward/back
-- two finger rotate to rotate camera clockwise/counterclockwise
-- two finger pan to move side-to-side and up-down
-
-gamepad
-- if you have a game controller connected it should work
-
-other
-- press 0-9 to switch to one of the pre-loaded camera views
-- press '-' or '+'key to cycle loaded cameras
-- press p to resume default animation
-- drag and drop .ply file to convert to .splat
-- drag and drop cameras.json to load cameras
-- press C to log current camera position (for finding annotation coordinates)
+    <div class="sidebar-section">
+        <h3 style="margin-top: 0; font-size: 1.1rem;">📷 Camera Tool</h3>
+        <p style="font-size: 12px; color: #b2bcec; line-height: 1.3; margin-bottom: 10px;">
+            Position the camera in the viewer, capture the matrix, and copy it for your training modules.
+        </p>
+        
+        <button id="captureCamBtn" class="st-button st-button-primary">Capture Current View</button>
+        
+        <label for="camOutput" style="margin-top: 15px;">Matrix Output (JSON)</label>
+        <textarea id="camOutput" rows="3" class="st-input" style="font-family: monospace; font-size: 11px; resize: vertical;" readonly placeholder="Matrix will appear here..."></textarea>
+        
+        <button id="copyCamBtn" class="st-button st-button-secondary" style="margin-top: 5px;">📋 Copy to Clipboard</button>
+    </div>
 </div>
 
-		</details>
-			
-		</div>
+<style>
+    /* Global font override to match Streamlit's clean look */
+    body { font-family: "Source Sans Pro", sans-serif; }
 
-		<div id="progress"></div>
+    .streamlit-sidebar {
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 300px;
+        background-color: #262730; /* Streamlit dark theme sidebar */
+        color: #FAFAFA;
+        padding: 2rem 1.5rem;
+        z-index: 1000;
+        overflow-y: auto;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+    }
 
-		<div id="message"></div>
-		<div class="scene" id="spinner">
-			<div class="cube-wrapper">
-				<div class="cube">
-					<div class="cube-faces">
-						<div class="cube-face bottom"></div>
-						<div class="cube-face top"></div>
-						<div class="cube-face left"></div>
-						<div class="cube-face right"></div>
-						<div class="cube-face back"></div>
-						<div class="cube-face front"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<canvas id="canvas"></canvas>
+    .sidebar-section label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #FAFAFA;
+    }
 
-		<div id="quality">
-			<span id="fps"></span>
-		</div>
-		<div id="caminfo">
-			<span id="camid"></span>
-		</div>
-		<script src="main.js"></script>
+    .st-input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 15px;
+        background-color: #0E1117; /* Darker input background */
+        color: white;
+        border: 1px solid rgba(250, 250, 250, 0.2);
+        border-radius: 0.25rem;
+        box-sizing: border-box;
+    }
+    .st-input:focus {
+        outline: none;
+        border-color: #FF4B4B;
+    }
 
-        <div style="position: absolute; top: 40px; right: 20px; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 15px; border-radius: 8px; color: white; font-family: sans-serif; border: 1px solid #444;">
-            
-            <label for="categorySelect" style="display:block; margin-bottom:5px; font-weight:bold; font-size: 14px; color:#aaa;">1. Filter by Type:</label>
-            <select id="categorySelect" style="padding: 8px; width: 250px; border-radius: 4px; border: none; margin-bottom: 15px;">
-                <option value="" disabled selected>Loading...</option>
-            </select>
+    .st-button {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
 
-            <label for="modelSelect" style="display:block; margin-bottom:5px; font-weight:bold; font-size: 14px; color:#aaa;">2. Select Scan:</label>
-            <select id="modelSelect" onchange="changeModel(this.value)" style="padding: 8px; width: 250px; border-radius: 4px; border: none;">
-                <option value="" disabled selected>-- Select a Type first --</option>
-            </select>
+    /* Primary button mimics Streamlit's red accent */
+    .st-button-primary {
+        background-color: #FF4B4B;
+        color: white;
+    }
+    .st-button-primary:hover {
+        background-color: #FF6666;
+    }
 
-            <a id="downloadBtn" href="#" target="_blank" style="display:none; margin-top: 15px; background: #28a745; color: white; text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px;">
-                Download .ply File
-            </a>
+    /* Secondary button mimics Streamlit's outline buttons */
+    .st-button-secondary {
+        background-color: #2b2c36;
+        color: #FAFAFA;
+        border-color: rgba(250, 250, 250, 0.2);
+    }
+    .st-button-secondary:hover {
+        border-color: #FF4B4B;
+        color: #FF4B4B;
+    }
+</style>
 
-            <p style="margin-top: 10px; margin-bottom: 0; font-size: 12px; color: #ffcc00; max-width: 250px; line-height: 1.4;">
-                ⚠️ <b>Note:</b> Large files (~200MB).<br>Please allow 15-30s for download.
-            </p>
-        </div>
+<script>
+    // --- Existing Model Loading Logic ---
+    let allModels = [];
+    const categorySelect = document.getElementById('categorySelect');
+    const modelSelect = document.getElementById('modelSelect');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-        <script>
-            // Global variables to store our data
-            let allModels = [];
-            const categorySelect = document.getElementById('categorySelect');
-            const modelSelect = document.getElementById('modelSelect');
-            const downloadBtn = document.getElementById('downloadBtn');
+    fetch('models.json')
+        .then(response => {
+            if (!response.ok) throw new Error("Could not find models.json");
+            return response.json();
+        })
+        .then(data => {
+            allModels = data;
+            initializeMenu();
+        })
+        .catch(error => {
+            console.error('Error loading models:', error);
+            categorySelect.innerHTML = '<option disabled>Error loading data</option>';
+        });
 
-            // 1. Fetch the JSON file
-            fetch('models.json')
-                .then(response => {
-                    if (!response.ok) throw new Error("Could not find models.json");
-                    return response.json();
-                })
-                .then(data => {
-                    allModels = data;
-                    initializeMenu();
-                })
-                .catch(error => {
-                    console.error('Error loading models:', error);
-                    categorySelect.innerHTML = '<option disabled>Error loading data</option>';
-                });
+    function initializeMenu() {
+        const categories = [...new Set(allModels.map(item => item.category || "Uncategorized"))];
+        categorySelect.innerHTML = '<option value="" disabled selected>-- Select Type --</option>';
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            categorySelect.appendChild(option);
+        });
 
-            // 2. Initialize the Menus
-            function initializeMenu() {
-                // Get unique categories (e.g., "Uncropped", "Cropped")
-                const categories = [...new Set(allModels.map(item => item.category || "Uncategorized"))];
+        categorySelect.addEventListener('change', (e) => {
+            updateModelDropdown(e.target.value);
+        });
+        checkPersistence();
+    }
+
+    function updateModelDropdown(selectedCategory) {
+        const filteredModels = allModels.filter(m => (m.category || "Uncategorized") === selectedCategory);
+        modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
+        filteredModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.url;
+            option.textContent = model.name;
+            modelSelect.appendChild(option);
+        });
+    }
+
+    function changeModel(url) {
+        window.location.search = '?url=' + url;
+    }
+
+    function checkPersistence() {
+        const currentParams = new URLSearchParams(window.location.search);
+        const rawUrl = currentParams.get('url');
+        if (rawUrl) {
+            const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
+            const matchedModel = allModels.find(m => decodeURIComponent(m.url).trim() === currentUrlDecoded);
+            if (matchedModel) {
+                const cat = matchedModel.category || "Uncategorized";
+                categorySelect.value = cat;
+                updateModelDropdown(cat);
+                modelSelect.value = matchedModel.url;
+                downloadBtn.href = matchedModel.url;
+                downloadBtn.style.display = "block"; 
+            }
+        }
+    }
+
+    // --- NEW: Camera Angle Manager Logic ---
+    const captureCamBtn = document.getElementById('captureCamBtn');
+    const copyCamBtn = document.getElementById('copyCamBtn');
+    const camOutput = document.getElementById('camOutput');
+
+    captureCamBtn.addEventListener('click', () => {
+        // Accesses the global viewMatrix from main.js
+        if (typeof viewMatrix !== 'undefined') {
+            // Rounds everything to 2 decimal places exactly like the 'v' key logic
+            const roundedMatrix = viewMatrix.map((k) => Math.round(k * 100) / 100);
+            camOutput.value = JSON.stringify(roundedMatrix);
+        } else {
+            camOutput.value = "Error: Viewer not loaded.";
+        }
+    });
+
+    copyCamBtn.addEventListener('click', () => {
+        if(camOutput.value && camOutput.value !== "Error: Viewer not loaded.") {
+            navigator.clipboard.writeText(camOutput.value).then(() => {
+                const originalText = copyCamBtn.innerText;
+                copyCamBtn.innerText = "✅ Copied!";
+                copyCamBtn.style.borderColor = "#4CAF50";
+                copyCamBtn.style.color = "#4CAF50";
                 
-                // Clear and populate Category dropdown
-                categorySelect.innerHTML = '<option value="" disabled selected>-- Select Type --</option>';
-                categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categorySelect.appendChild(option);
-                });
-
-                // Add Event Listener for when Category changes
-                categorySelect.addEventListener('change', (e) => {
-                    updateModelDropdown(e.target.value);
-                });
-
-                // Run Persistence Logic (Restore selection if page was refreshed)
-                checkPersistence();
-            }
-
-            // 3. Update Model List based on Category
-            function updateModelDropdown(selectedCategory) {
-                // Filter models that match the category
-                const filteredModels = allModels.filter(m => (m.category || "Uncategorized") === selectedCategory);
-
-                // Clear Model dropdown
-                modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
-
-                // Populate Model dropdown
-                filteredModels.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.url;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
-                });
-            }
-
-            // 4. Function to reload the page
-            function changeModel(url) {
-                window.location.search = '?url=' + url;
-            }
-
-            // 5. Smart Persistence Logic (Updates Download Button)
-            function checkPersistence() {
-                const currentParams = new URLSearchParams(window.location.search);
-                const rawUrl = currentParams.get('url');
-
-                if (rawUrl) {
-                    const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
-
-                    // Find which model belongs to this URL
-                    const matchedModel = allModels.find(m => decodeURIComponent(m.url).trim() === currentUrlDecoded);
-
-                    if (matchedModel) {
-                        // 1. Select the correct category
-                        const cat = matchedModel.category || "Uncategorized";
-                        categorySelect.value = cat;
-
-                        // 2. Force the model list to update immediately based on that category
-                        updateModelDropdown(cat);
-
-                        // 3. Select the correct model in the new list
-                        modelSelect.value = matchedModel.url;
-
-                        // 4. UPDATE DOWNLOAD BUTTON
-                        downloadBtn.href = matchedModel.url;
-                        downloadBtn.style.display = "block"; // Make it visible
-                    }
-                }
-            }
-        </script>
-        </body>
-</html>
+                setTimeout(() => {
+                    copyCamBtn.innerText = originalText;
+                    copyCamBtn.style.borderColor = "rgba(250, 250, 250, 0.2)";
+                    copyCamBtn.style.color = "#FAFAFA";
+                }, 2000);
+            });
+        }
+    });
+</script>
