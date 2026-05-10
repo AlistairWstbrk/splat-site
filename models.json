@@ -173,5 +173,15 @@
     "name": "Equinox Hood Open",
     "category": "Mipmap Scans",
     "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Mipmap%20Scans/equinoxhoodopen.ply"
+  },
+  {
+    "name": "Blazer PPV",
+    "category": "Example",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Refined%20vehicle%20scans/BLAZERPPVREFINED.ply"
+  },
+  {
+    "name": "Equinox",
+    "category": "Example",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Refined%20vehicle%20scans/EQUINOXREFINE.ply"
   }
 ]
