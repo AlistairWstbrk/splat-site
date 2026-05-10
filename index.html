@@ -18,7 +18,6 @@
 			h3 { margin: 5px 0; }
 			p { margin: 5px 0; font-size: small; }
 
-			/* Cube Spinner Animations */
 			.cube-wrapper { transform-style: preserve-3d; }
 			.cube { transform-style: preserve-3d; transform: rotateX(45deg) rotateZ(45deg); animation: rotation 2s infinite; }
 			.cube-faces { transform-style: preserve-3d; height: 80px; width: 80px; position: relative; transform-origin: 0 0; transform: translateX(0) translateY(0) translateZ(-40px); }
@@ -82,7 +81,7 @@
 			if(location.host.includes('hf.space')) document.body.classList.add('nohf');
 		</script>
         
-        <div id="info">
+		<div id="info">
 			<h3 class="nohf">WebGL 3D Gaussian Splat Viewer</h3>
 			<details>
 			    <summary>Use mouse or arrow keys to navigate.</summary>
@@ -98,7 +97,7 @@ mouse
 		    </details>
 		</div>
 
-        <div id="progress"></div>
+		<div id="progress"></div>
 		<div id="message"></div>
 		<div class="scene" id="spinner">
 			<div class="cube-wrapper">
@@ -118,7 +117,8 @@ mouse
             <div style="position:absolute; top:10px; left:10px; width:4px; height:4px; background:white; border-radius:50%;"></div>
         </div>
         <div id="devMarker" style="display:none; position:absolute; width:16px; height:16px; background:#00ff88; border:2px solid black; border-radius:50%; transform:translate(-50%, -50%); z-index:101; pointer-events:none; box-shadow: 0 0 10px #00ff88;"></div>
-        <div id="quality"><span id="fps"></span></div>
+
+		<div id="quality"><span id="fps"></span></div>
 		<div id="caminfo"><span id="camid"></span></div>
 
         <script src="main.js"></script>
@@ -137,7 +137,12 @@ mouse
                     <option value="" disabled selected>-- Select a Type first --</option>
                 </select>
 
-                <a id="downloadBtn" href="#" target="_blank" class="st-button st-button-secondary" style="display:none; text-decoration: none; text-align: center;">
+                <label for="cameraSelect" style="margin-top: 10px; color: #ffbd45;">3. Select View Angle</label>
+                <select id="cameraSelect" class="st-input" onchange="changeCameraView(this.value)" style="border-color: rgba(255, 189, 69, 0.4);">
+                    <option value="" disabled selected>-- Select a Scan first --</option>
+                </select>
+
+                <a id="downloadBtn" href="#" target="_blank" class="st-button st-button-secondary" style="display:none; text-decoration: none; text-align: center; margin-top:15px;">
                     ⬇️ Download .ply File
                 </a>
             </div>
@@ -145,16 +150,7 @@ mouse
             <hr>
 
             <div class="sidebar-section">
-                <h3 style="margin-top: 0; font-size: 1.1rem; color: #ffbd45;">📷 Camera Tool</h3>
-                <button id="captureCamBtn" class="st-button st-button-primary">Capture View Matrix</button>
-                <textarea id="camOutput" rows="2" class="st-input" style="font-family: monospace; font-size: 11px; resize: none; margin-bottom: 5px;" readonly placeholder="Matrix will appear here..."></textarea>
-                <button id="copyCamBtn" class="st-button st-button-secondary">📋 Copy Matrix</button>
-            </div>
-
-            <hr>
-
-            <div class="sidebar-section">
-                <h3 style="margin-top: 0; font-size: 1.1rem; color: #00ff88;">🛠️ Scene Maker (Dev Mode)</h3>
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: #00ff88;">🛠️ Scene Maker (Dev)</h3>
                 
                 <label style="display:flex; align-items:center; cursor:pointer; margin-bottom: 15px;">
                     <input type="checkbox" id="devModeToggle" style="margin-right: 8px; width: 16px; height: 16px; accent-color: #FF4B4B;">
@@ -163,45 +159,72 @@ mouse
 
                 <div id="devModeControls" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed #4B4C53;">
                     
+                    <h4 style="margin-top: 0; font-size: 1rem; color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 4px;">📍 Create Info Point</h4>
                     <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
-                        1. Center the red crosshair on the car part.<br>2. Click <b>Drop Pin</b>.
+                        Center crosshair, click Drop Pin, orbit side, adjust slider depth.
                     </p>
                     <button id="dropPinBtn" class="st-button st-button-primary">📍 Drop Pin at Crosshair</button>
                     
                     <div id="depthControlBlock" style="display:none; margin-top: 15px;">
-                        <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
-                            3. Orbit your camera to the side.<br>4. Use the slider to slide the green pin until it touches the car surface perfectly.
-                        </p>
-                        <label for="depthSlider">Adjust Pin Depth (Z-Axis): <span id="depthValText" style="color:#00ff88;">2.00</span></label>
+                        <label for="depthSlider">Adjust Depth: <span id="depthValText" style="color:#00ff88;">2.00</span></label>
                         <input type="range" id="depthSlider" class="st-slider" min="0.1" max="6.0" step="0.05" value="2.0">
                         
                         <label>Annotation ID</label>
-                        <input type="text" id="annoId" class="st-input" value="anno-new-1" placeholder="anno-id">
+                        <input type="text" id="annoId" class="st-input" value="anno-new-1">
                         
                         <label>Title</label>
-                        <input type="text" id="annoTitle" class="st-input" value="⚡ New Component" placeholder="Title">
+                        <input type="text" id="annoTitle" class="st-input" value="⚡ New Component">
                         
-                        <label>Description</label>
-                        <textarea id="annoDesc" class="st-input" rows="2" placeholder="Description details..."></textarea>
-                        
-                        <label>Target URL Snippet (Optional)</label>
+                        <label>Target URL Snippet</label>
                         <input type="text" id="annoUrl" class="st-input" placeholder="e.g. Equinox">
                         
-                        <button id="generatePointBtn" class="st-button st-button-primary" style="background-color:#00ff88; color:black;">⚙️ Generate JSON</button>
+                        <button id="generatePointBtn" class="st-button st-button-primary" style="background-color:#00ff88; color:black;">⚙️ Generate Point JSON</button>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #4B4C53;">
+                        <h4 style="margin-top: 0; font-size: 1rem; color: #ffbd45; border-bottom: 1px solid #333; padding-bottom: 4px;">📷 Create Camera View</h4>
+                        <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
+                            Position your view, name it, and generate the code for the <code>customCameras</code> dictionary.
+                        </p>
+                        <label>Angle Name</label>
+                        <input type="text" id="newCamName" class="st-input" placeholder="e.g., Driver Door">
+                        <button id="generateCamBtn" class="st-button st-button-primary" style="background-color: #ffbd45; color: black;">⚙️ Generate Camera JSON</button>
                     </div>
                 </div>
 
-                <textarea id="pointOutput" rows="5" class="st-input" style="display:none; font-family: monospace; font-size: 11px; resize: vertical; margin-top: 10px;" readonly></textarea>
-                <button id="copyPointBtn" class="st-button st-button-secondary" style="display:none;">📋 Copy Point JSON</button>
+                <textarea id="devOutputBox" rows="5" class="st-input" style="display:none; font-family: monospace; font-size: 11px; resize: vertical; margin-top: 10px;" readonly></textarea>
+                <button id="copyDevBtn" class="st-button st-button-secondary" style="display:none;">📋 Copy JSON</button>
 
             </div>
         </div>
 
         <script>
+            // ==========================================
+            // --- CUSTOM CAMERA CONFIGURATION DICTIONARY ---
+            // ==========================================
+            // Paste the generated cameras from Dev Mode into this object!
+            // The "Key" (e.g., "Equinox", "Blazer") should be a unique word found in that model's URL.
+            const customCameras = {
+                "Equinox": [
+                    {
+                        "name": "Default Overview",
+                        "matrix": [0.73, 0.13, -0.67, 0, 0.1, 0.95, 0.29, 0, 0.67, -0.28, 0.68, 0, -0.02, 0.29, 2.22, 1]
+                    }
+                ],
+                "Blazer": [
+                    {
+                        "name": "Default Overview",
+                        "matrix": [0.73, 0.13, -0.67, 0, 0.1, 0.95, 0.29, 0, 0.67, -0.28, 0.68, 0, -0.02, 0.29, 2.22, 1]
+                    }
+                ]
+            };
+
+
             // --- Model Loading ---
             let allModels = [];
             const categorySelect = document.getElementById('categorySelect');
             const modelSelect = document.getElementById('modelSelect');
+            const cameraSelect = document.getElementById('cameraSelect');
             const downloadBtn = document.getElementById('downloadBtn');
 
             fetch('models.json')
@@ -219,7 +242,8 @@ mouse
 
             function updateModelDropdown(selectedCategory) {
                 const filteredModels = allModels.filter(m => (m.category || "Uncategorized") === selectedCategory);
-                modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
+                modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Scan --</option>';
+                cameraSelect.innerHTML = '<option value="" disabled selected>-- Select a Scan first --</option>';
                 filteredModels.forEach(model => { const option = document.createElement('option'); option.value = model.url; option.textContent = model.name; modelSelect.appendChild(option); });
             }
 
@@ -232,38 +256,51 @@ mouse
                     const matchedModel = allModels.find(m => decodeURIComponent(m.url).trim() === currentUrlDecoded);
                     if (matchedModel) {
                         const cat = matchedModel.category || "Uncategorized";
-                        categorySelect.value = cat; updateModelDropdown(cat); modelSelect.value = matchedModel.url;
-                        downloadBtn.href = matchedModel.url; downloadBtn.style.display = "block"; 
+                        categorySelect.value = cat; 
+                        updateModelDropdown(cat); 
+                        modelSelect.value = matchedModel.url;
+                        downloadBtn.href = matchedModel.url; 
+                        downloadBtn.style.display = "block"; 
+                        
+                        // Populate the View Dropdown for this specific model
+                        populateCameraDropdown(currentUrlDecoded);
                     }
                 }
             }
 
-            // --- Camera Tool Logic ---
-            const captureCamBtn = document.getElementById('captureCamBtn');
-            const copyCamBtn = document.getElementById('copyCamBtn');
-            const camOutput = document.getElementById('camOutput');
+            // --- Dynamic Camera Dropdown Logic ---
+            function populateCameraDropdown(urlStr) {
+                cameraSelect.innerHTML = '<option value="" disabled selected>-- Select a View Angle --</option>';
+                let foundMatch = false;
 
-            captureCamBtn.addEventListener('click', () => {
-                if (typeof viewMatrix !== 'undefined') {
-                    const roundedMatrix = viewMatrix.map((k) => Math.round(k * 100) / 100);
-                    camOutput.value = JSON.stringify(roundedMatrix);
-                } else {
-                    camOutput.value = "Error: Viewer not loaded.";
+                // Loop through our custom dictionary
+                for (let keyword in customCameras) {
+                    if (urlStr.includes(keyword)) {
+                        foundMatch = true;
+                        customCameras[keyword].forEach(cam => {
+                            const option = document.createElement('option');
+                            option.value = JSON.stringify(cam.matrix);
+                            option.textContent = cam.name;
+                            cameraSelect.appendChild(option);
+                        });
+                    }
                 }
-            });
 
-            copyCamBtn.addEventListener('click', () => {
-                if(camOutput.value && !camOutput.value.includes("Error")) {
-                    navigator.clipboard.writeText(camOutput.value).then(() => {
-                        const originalText = copyCamBtn.innerText;
-                        copyCamBtn.innerText = "✅ Copied!";
-                        copyCamBtn.style.borderColor = "#4CAF50"; copyCamBtn.style.color = "#4CAF50";
-                        setTimeout(() => { copyCamBtn.innerText = originalText; copyCamBtn.style.borderColor = "rgba(250, 250, 250, 0.2)"; copyCamBtn.style.color = "#FAFAFA"; }, 2000);
-                    });
+                if (!foundMatch) {
+                    cameraSelect.innerHTML = '<option value="" disabled selected>No saved views available</option>';
                 }
-            });
+            }
 
-            // --- NEW: Scene Maker / Dev Mode Logic ---
+            function changeCameraView(matrixStr) {
+                if(!matrixStr) return;
+                // Writing to location.hash triggers the event listener in main.js
+                // which handles smoothly jumping to the new viewMatrix and stopping the carousel.
+                window.location.hash = encodeURIComponent(matrixStr);
+            }
+
+            // ==========================================
+            // --- NEW: Dev Mode Logic (Points & Cameras) ---
+            // ==========================================
             const devModeToggle = document.getElementById('devModeToggle');
             const devModeControls = document.getElementById('devModeControls');
             const devCrosshair = document.getElementById('devCrosshair');
@@ -275,54 +312,43 @@ mouse
             const depthValText = document.getElementById('depthValText');
             
             const generatePointBtn = document.getElementById('generatePointBtn');
-            const pointOutput = document.getElementById('pointOutput');
-            const copyPointBtn = document.getElementById('copyPointBtn');
+            const generateCamBtn = document.getElementById('generateCamBtn');
+            const devOutputBox = document.getElementById('devOutputBox');
+            const copyDevBtn = document.getElementById('copyDevBtn');
 
             // Internal Dev State
             let isDevMode = false;
             let pinDropped = false;
             let pinCamPos = [0,0,0];
             let pinForwardVec = [0,0,0];
-            let calculatedTarget = [0,0,0]; // The resulting 3D coordinate
+            let calculatedTarget = [0,0,0];
 
-            // 1. Toggle Dev Mode UI
             devModeToggle.addEventListener('change', (e) => {
                 isDevMode = e.target.checked;
                 devModeControls.style.display = isDevMode ? 'block' : 'none';
                 devCrosshair.style.display = isDevMode ? 'block' : 'none';
-                
                 if(!isDevMode) {
-                    // Reset if turned off
                     pinDropped = false;
                     devMarker.style.display = 'none';
                     depthControlBlock.style.display = 'none';
-                    pointOutput.style.display = 'none';
-                    copyPointBtn.style.display = 'none';
+                    devOutputBox.style.display = 'none';
+                    copyDevBtn.style.display = 'none';
                 }
             });
 
-            // 2. Drop Pin (Captures camera ray)
+            // 1. Point Creation Logic
             dropPinBtn.addEventListener('click', () => {
                 if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined') return;
-                
-                // Get Camera world position and forward vector
                 let camWorld = invert4(viewMatrix);
                 pinCamPos = [camWorld[12], camWorld[13], camWorld[14]];
-                // In WebGL, camera looks down the negative Z axis
                 pinForwardVec = [-camWorld[8], -camWorld[9], -camWorld[10]];
-                
-                // Reset slider to default
-                depthSlider.value = 2.0;
-                depthValText.innerText = "2.00";
-                
+                depthSlider.value = 2.0; depthValText.innerText = "2.00";
                 updateCalculatedTarget();
-                
                 pinDropped = true;
                 devMarker.style.display = 'block';
                 depthControlBlock.style.display = 'block';
             });
 
-            // 3. Slide Depth (Moves point along the ray)
             depthSlider.addEventListener('input', (e) => {
                 depthValText.innerText = parseFloat(e.target.value).toFixed(2);
                 updateCalculatedTarget();
@@ -337,72 +363,62 @@ mouse
                 ];
             }
 
-            // 4. Animation Loop to project the 3D pin onto the screen
             function renderDevMarker() {
-                // If the pin is dropped and main.js variables are available
                 if (pinDropped && isDevMode && typeof viewMatrix !== 'undefined' && typeof camera !== 'undefined' && typeof getProjectionMatrix !== 'undefined') {
-                    
-                    // Recreate projection matrix based on current screen size
                     let proj = getProjectionMatrix(camera.fx, camera.fy, innerWidth, innerHeight);
-                    // Actual view matrix multiplication from main.js
                     let viewProj = multiply4(proj, viewMatrix); 
-                    
-                    // Project the 3D target to 2D Screen Space
                     let clipSpace = multiplyMatrixAndPoint(viewProj, calculatedTarget);
                     let w = clipSpace[3];
-
-                    // Only render if it's in front of the camera
                     if (w > 0.1) {
-                        let ndcX = clipSpace[0] / w;
-                        let ndcY = clipSpace[1] / w;
-
-                        // Check if within screen bounds roughly
+                        let ndcX = clipSpace[0] / w; let ndcY = clipSpace[1] / w;
                         if (ndcX >= -1.2 && ndcX <= 1.2 && ndcY >= -1.2 && ndcY <= 1.2) {
-                            let screenX = (ndcX * 0.5 + 0.5) * innerWidth;
-                            let screenY = -(ndcY * 0.5 - 0.5) * innerHeight; 
-
                             devMarker.style.display = 'block';
-                            devMarker.style.left = screenX + 'px';
-                            devMarker.style.top = screenY + 'px';
-                        } else {
-                            devMarker.style.display = 'none';
-                        }
-                    } else {
-                        devMarker.style.display = 'none';
-                    }
+                            devMarker.style.left = ((ndcX * 0.5 + 0.5) * innerWidth) + 'px';
+                            devMarker.style.top = (-(ndcY * 0.5 - 0.5) * innerHeight) + 'px';
+                        } else devMarker.style.display = 'none';
+                    } else devMarker.style.display = 'none';
                 }
                 requestAnimationFrame(renderDevMarker);
             }
-            // Start the dev loop
             requestAnimationFrame(renderDevMarker);
 
-            // 5. Generate JSON Button
+            // Generate Point Output
             generatePointBtn.addEventListener('click', () => {
                 const roundedPos = calculatedTarget.map(v => Math.round(v * 100) / 100);
-                
                 const finalJson = {
                     id: document.getElementById('annoId').value || "anno-new",
                     position: roundedPos,
                     title: document.getElementById('annoTitle').value,
-                    description: document.getElementById('annoDesc').value,
+                    description: "Description text goes here.",
                     targetUrlSnippet: document.getElementById('annoUrl').value
                 };
-
-                // Format it nicely so it can be pasted directly into main.js vehicleAnnotations array
-                pointOutput.value = JSON.stringify(finalJson, null, 4) + ",";
-                
-                pointOutput.style.display = 'block';
-                copyPointBtn.style.display = 'block';
+                devOutputBox.value = JSON.stringify(finalJson, null, 4) + ",";
+                devOutputBox.style.display = 'block';
+                copyDevBtn.style.display = 'block';
             });
 
-            // 6. Copy Point JSON
-            copyPointBtn.addEventListener('click', () => {
-                if(pointOutput.value) {
-                    navigator.clipboard.writeText(pointOutput.value).then(() => {
-                        const originalText = copyPointBtn.innerText;
-                        copyPointBtn.innerText = "✅ Copied JSON!";
-                        copyPointBtn.style.borderColor = "#4CAF50"; copyPointBtn.style.color = "#4CAF50";
-                        setTimeout(() => { copyPointBtn.innerText = originalText; copyPointBtn.style.borderColor = "rgba(250, 250, 250, 0.2)"; copyPointBtn.style.color = "#FAFAFA"; }, 2000);
+            // 2. Camera Creation Logic
+            generateCamBtn.addEventListener('click', () => {
+                if (typeof viewMatrix !== 'undefined') {
+                    const roundedMatrix = viewMatrix.map((k) => Math.round(k * 100) / 100);
+                    const camJson = {
+                        name: document.getElementById('newCamName').value || "New Custom View",
+                        matrix: roundedMatrix
+                    };
+                    devOutputBox.value = JSON.stringify(camJson, null, 4) + ",";
+                    devOutputBox.style.display = 'block';
+                    copyDevBtn.style.display = 'block';
+                }
+            });
+
+            // Universal Copy Button
+            copyDevBtn.addEventListener('click', () => {
+                if(devOutputBox.value) {
+                    navigator.clipboard.writeText(devOutputBox.value).then(() => {
+                        const originalText = copyDevBtn.innerText;
+                        copyDevBtn.innerText = "✅ Copied to Clipboard!";
+                        copyDevBtn.style.borderColor = "#4CAF50"; copyDevBtn.style.color = "#4CAF50";
+                        setTimeout(() => { copyDevBtn.innerText = originalText; copyDevBtn.style.borderColor = "rgba(250, 250, 250, 0.2)"; copyDevBtn.style.color = "#FAFAFA"; }, 2000);
                     });
                 }
             });
