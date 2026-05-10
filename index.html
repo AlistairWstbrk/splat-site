@@ -10,11 +10,11 @@
 			/* --- ORIGINAL VIEWER CSS --- */
 			body {
 				overflow: hidden; margin: 0; height: 100vh; width: 100vw;
-				font-family: "Source Sans Pro", sans-serif; /* Updated to Streamlit font */
+				font-family: "Source Sans Pro", sans-serif;
 				background: black; text-shadow: 0 0 3px black; color: white;
 			}
 			a { color: white; }
-			#info { z-index: 100; position: absolute; top: 10px; left: 320px; /* Shifted right for sidebar */ }
+			#info { z-index: 100; position: absolute; top: 10px; left: 340px; }
 			h3 { margin: 5px 0; }
 			p { margin: 5px 0; font-size: small; }
 
@@ -41,7 +41,6 @@
 			#quality { position: absolute; bottom: 10px; z-index: 999; right: 10px; }
 			#caminfo { position: absolute; top: 10px; z-index: 999; right: 10px; }
 			
-            /* The actual render canvas */
             #canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; z-index: 1;}
 			#instructions { background: rgba(0,0,0,0.6); white-space: pre-wrap; padding: 10px; border-radius: 10px; font-size: x-small; }
 			body.nohf .nohf { display: none; }
@@ -63,16 +62,19 @@
 			.splat-annotation .close-btn { float: right; cursor: pointer; color: #aaa; margin-left: 10px; pointer-events: auto; }
 			.splat-annotation .close-btn:hover { color: #fff; }
 
-            /* --- NEW STREAMLIT-STYLE SIDEBAR CSS --- */
-            .streamlit-sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: 300px; background-color: #262730; color: #FAFAFA; padding: 2rem 1.5rem; z-index: 1000; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.5); box-sizing: border-box;}
-            .sidebar-section label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #FAFAFA; }
-            .st-input { width: 100%; padding: 0.5rem; margin-bottom: 15px; background-color: #0E1117; color: white; border: 1px solid rgba(250, 250, 250, 0.2); border-radius: 0.25rem; box-sizing: border-box; }
+            /* --- STREAMLIT-STYLE SIDEBAR CSS --- */
+            .streamlit-sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: 320px; background-color: #262730; color: #FAFAFA; padding: 1.5rem 1rem; z-index: 1000; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 10px rgba(0,0,0,0.5); box-sizing: border-box;}
+            .sidebar-section { margin-bottom: 20px; }
+            .sidebar-section label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; color: #FAFAFA; }
+            .st-input { width: 100%; padding: 0.4rem; margin-bottom: 10px; background-color: #0E1117; color: white; border: 1px solid rgba(250, 250, 250, 0.2); border-radius: 0.25rem; box-sizing: border-box; font-family: inherit; font-size: 13px;}
             .st-input:focus { outline: none; border-color: #FF4B4B; }
-            .st-button { display: block; width: 100%; padding: 0.5rem; border-radius: 0.25rem; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease; box-sizing: border-box;}
+            .st-button { display: block; width: 100%; padding: 0.5rem; border-radius: 0.25rem; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s ease; box-sizing: border-box; margin-bottom: 8px;}
             .st-button-primary { background-color: #FF4B4B; color: white; }
             .st-button-primary:hover { background-color: #FF6666; }
             .st-button-secondary { background-color: #2b2c36; color: #FAFAFA; border-color: rgba(250, 250, 250, 0.2); }
             .st-button-secondary:hover { border-color: #FF4B4B; color: #FF4B4B; }
+            .st-slider { width: 100%; margin: 10px 0 15px 0; accent-color: #FF4B4B; }
+            hr { border-top: 1px solid #4B4C53; border-bottom: none; margin: 15px 0; }
 		</style>
 	</head>
 	<body>
@@ -89,15 +91,9 @@ movement (arrow keys)
 - left/right arrow keys to strafe side to side
 - up/down arrow keys to move forward/back
 - space to jump
-
 mouse
 - click and drag to orbit
 - right click (or ctrl/cmd key) and drag up/down to move
-
-other
-- press 0-9 to switch to pre-loaded camera views
-- press '-' or '+'key to cycle loaded cameras
-- press C to log current camera position
                 </div>
 		    </details>
 		</div>
@@ -116,7 +112,13 @@ other
 		
         <canvas id="canvas"></canvas>
 
-		<div id="quality"><span id="fps"></span></div>
+        <div id="devCrosshair" style="display:none; position:absolute; top:50%; left:50%; width:24px; height:24px; transform:translate(-50%, -50%); pointer-events:none; z-index:100;">
+            <div style="position:absolute; top:11px; left:0; width:24px; height:2px; background:rgba(255, 75, 75, 0.9);"></div>
+            <div style="position:absolute; top:0; left:11px; width:2px; height:24px; background:rgba(255, 75, 75, 0.9);"></div>
+            <div style="position:absolute; top:10px; left:10px; width:4px; height:4px; background:white; border-radius:50%;"></div>
+        </div>
+        <div id="devMarker" style="display:none; position:absolute; width:16px; height:16px; background:#00ff88; border:2px solid black; border-radius:50%; transform:translate(-50%, -50%); z-index:101; pointer-events:none; box-shadow: 0 0 10px #00ff88;"></div>
+        <div id="quality"><span id="fps"></span></div>
 		<div id="caminfo"><span id="camid"></span></div>
 
         <script src="main.js"></script>
@@ -138,103 +140,110 @@ other
                 <a id="downloadBtn" href="#" target="_blank" class="st-button st-button-secondary" style="display:none; text-decoration: none; text-align: center;">
                     ⬇️ Download .ply File
                 </a>
-                <p style="margin-top: 8px; font-size: 11px; color: #ffbd45; line-height: 1.3;">
-                    ⚠️ <b>Note:</b> Large files (~200MB). Allow 15-30s.
-                </p>
             </div>
 
-            <hr style="border-top: 1px solid #4B4C53; border-bottom: none; margin: 20px 0;">
+            <hr>
 
             <div class="sidebar-section">
-                <h3 style="margin-top: 0; font-size: 1.1rem;">📷 Camera Tool</h3>
-                <p style="font-size: 12px; color: #b2bcec; line-height: 1.3; margin-bottom: 10px;">
-                    Position the camera in the viewer, capture the matrix, and copy it for your training modules.
-                </p>
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: #ffbd45;">📷 Camera Tool</h3>
+                <button id="captureCamBtn" class="st-button st-button-primary">Capture View Matrix</button>
+                <textarea id="camOutput" rows="2" class="st-input" style="font-family: monospace; font-size: 11px; resize: none; margin-bottom: 5px;" readonly placeholder="Matrix will appear here..."></textarea>
+                <button id="copyCamBtn" class="st-button st-button-secondary">📋 Copy Matrix</button>
+            </div>
+
+            <hr>
+
+            <div class="sidebar-section">
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: #00ff88;">🛠️ Scene Maker (Dev Mode)</h3>
                 
-                <button id="captureCamBtn" class="st-button st-button-primary">Capture Current View</button>
-                
-                <label for="camOutput" style="margin-top: 15px;">Matrix Output</label>
-                <textarea id="camOutput" rows="3" class="st-input" style="font-family: monospace; font-size: 11px; resize: vertical;" readonly placeholder="Matrix will appear here..."></textarea>
-                
-                <button id="copyCamBtn" class="st-button st-button-secondary" style="margin-top: 5px;">📋 Copy to Clipboard</button>
+                <label style="display:flex; align-items:center; cursor:pointer; margin-bottom: 15px;">
+                    <input type="checkbox" id="devModeToggle" style="margin-right: 8px; width: 16px; height: 16px; accent-color: #FF4B4B;">
+                    <span style="font-size: 14px; font-weight: bold;">Enable Dev Mode</span>
+                </label>
+
+                <div id="devModeControls" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed #4B4C53;">
+                    
+                    <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
+                        1. Center the red crosshair on the car part.<br>2. Click <b>Drop Pin</b>.
+                    </p>
+                    <button id="dropPinBtn" class="st-button st-button-primary">📍 Drop Pin at Crosshair</button>
+                    
+                    <div id="depthControlBlock" style="display:none; margin-top: 15px;">
+                        <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
+                            3. Orbit your camera to the side.<br>4. Use the slider to slide the green pin until it touches the car surface perfectly.
+                        </p>
+                        <label for="depthSlider">Adjust Pin Depth (Z-Axis): <span id="depthValText" style="color:#00ff88;">2.00</span></label>
+                        <input type="range" id="depthSlider" class="st-slider" min="0.1" max="6.0" step="0.05" value="2.0">
+                        
+                        <label>Annotation ID</label>
+                        <input type="text" id="annoId" class="st-input" value="anno-new-1" placeholder="anno-id">
+                        
+                        <label>Title</label>
+                        <input type="text" id="annoTitle" class="st-input" value="⚡ New Component" placeholder="Title">
+                        
+                        <label>Description</label>
+                        <textarea id="annoDesc" class="st-input" rows="2" placeholder="Description details..."></textarea>
+                        
+                        <label>Target URL Snippet (Optional)</label>
+                        <input type="text" id="annoUrl" class="st-input" placeholder="e.g. Equinox">
+                        
+                        <button id="generatePointBtn" class="st-button st-button-primary" style="background-color:#00ff88; color:black;">⚙️ Generate JSON</button>
+                    </div>
+                </div>
+
+                <textarea id="pointOutput" rows="5" class="st-input" style="display:none; font-family: monospace; font-size: 11px; resize: vertical; margin-top: 10px;" readonly></textarea>
+                <button id="copyPointBtn" class="st-button st-button-secondary" style="display:none;">📋 Copy Point JSON</button>
+
             </div>
         </div>
 
         <script>
+            // --- Model Loading ---
             let allModels = [];
             const categorySelect = document.getElementById('categorySelect');
             const modelSelect = document.getElementById('modelSelect');
             const downloadBtn = document.getElementById('downloadBtn');
 
             fetch('models.json')
-                .then(response => {
-                    if (!response.ok) throw new Error("Could not find models.json");
-                    return response.json();
-                })
-                .then(data => {
-                    allModels = data;
-                    initializeMenu();
-                })
-                .catch(error => {
-                    console.error('Error loading models:', error);
-                    categorySelect.innerHTML = '<option disabled>Error loading data</option>';
-                });
+                .then(response => { if (!response.ok) throw new Error("Could not find models.json"); return response.json(); })
+                .then(data => { allModels = data; initializeMenu(); })
+                .catch(error => { console.error('Error:', error); categorySelect.innerHTML = '<option disabled>Error loading data</option>'; });
 
             function initializeMenu() {
                 const categories = [...new Set(allModels.map(item => item.category || "Uncategorized"))];
                 categorySelect.innerHTML = '<option value="" disabled selected>-- Select Type --</option>';
-                categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categorySelect.appendChild(option);
-                });
-
-                categorySelect.addEventListener('change', (e) => {
-                    updateModelDropdown(e.target.value);
-                });
+                categories.forEach(cat => { const option = document.createElement('option'); option.value = cat; option.textContent = cat; categorySelect.appendChild(option); });
+                categorySelect.addEventListener('change', (e) => updateModelDropdown(e.target.value));
                 checkPersistence();
             }
 
             function updateModelDropdown(selectedCategory) {
                 const filteredModels = allModels.filter(m => (m.category || "Uncategorized") === selectedCategory);
                 modelSelect.innerHTML = '<option value="" disabled selected>-- Choose a Model --</option>';
-                filteredModels.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model.url;
-                    option.textContent = model.name;
-                    modelSelect.appendChild(option);
-                });
+                filteredModels.forEach(model => { const option = document.createElement('option'); option.value = model.url; option.textContent = model.name; modelSelect.appendChild(option); });
             }
 
-            function changeModel(url) {
-                window.location.search = '?url=' + url;
-            }
+            function changeModel(url) { window.location.search = '?url=' + url; }
 
             function checkPersistence() {
-                const currentParams = new URLSearchParams(window.location.search);
-                const rawUrl = currentParams.get('url');
+                const rawUrl = new URLSearchParams(window.location.search).get('url');
                 if (rawUrl) {
                     const currentUrlDecoded = decodeURIComponent(rawUrl).trim();
                     const matchedModel = allModels.find(m => decodeURIComponent(m.url).trim() === currentUrlDecoded);
                     if (matchedModel) {
                         const cat = matchedModel.category || "Uncategorized";
-                        categorySelect.value = cat;
-                        updateModelDropdown(cat);
-                        modelSelect.value = matchedModel.url;
-                        downloadBtn.href = matchedModel.url;
-                        downloadBtn.style.display = "block"; 
+                        categorySelect.value = cat; updateModelDropdown(cat); modelSelect.value = matchedModel.url;
+                        downloadBtn.href = matchedModel.url; downloadBtn.style.display = "block"; 
                     }
                 }
             }
 
-            // Camera Angle Manager Logic
+            // --- Camera Tool Logic ---
             const captureCamBtn = document.getElementById('captureCamBtn');
             const copyCamBtn = document.getElementById('copyCamBtn');
             const camOutput = document.getElementById('camOutput');
 
             captureCamBtn.addEventListener('click', () => {
-                // Accesses the global viewMatrix from main.js
                 if (typeof viewMatrix !== 'undefined') {
                     const roundedMatrix = viewMatrix.map((k) => Math.round(k * 100) / 100);
                     camOutput.value = JSON.stringify(roundedMatrix);
@@ -244,18 +253,156 @@ other
             });
 
             copyCamBtn.addEventListener('click', () => {
-                if(camOutput.value && camOutput.value !== "Error: Viewer not loaded.") {
+                if(camOutput.value && !camOutput.value.includes("Error")) {
                     navigator.clipboard.writeText(camOutput.value).then(() => {
                         const originalText = copyCamBtn.innerText;
                         copyCamBtn.innerText = "✅ Copied!";
-                        copyCamBtn.style.borderColor = "#4CAF50";
-                        copyCamBtn.style.color = "#4CAF50";
-                        
-                        setTimeout(() => {
-                            copyCamBtn.innerText = originalText;
-                            copyCamBtn.style.borderColor = "rgba(250, 250, 250, 0.2)";
-                            copyCamBtn.style.color = "#FAFAFA";
-                        }, 2000);
+                        copyCamBtn.style.borderColor = "#4CAF50"; copyCamBtn.style.color = "#4CAF50";
+                        setTimeout(() => { copyCamBtn.innerText = originalText; copyCamBtn.style.borderColor = "rgba(250, 250, 250, 0.2)"; copyCamBtn.style.color = "#FAFAFA"; }, 2000);
+                    });
+                }
+            });
+
+            // --- NEW: Scene Maker / Dev Mode Logic ---
+            const devModeToggle = document.getElementById('devModeToggle');
+            const devModeControls = document.getElementById('devModeControls');
+            const devCrosshair = document.getElementById('devCrosshair');
+            const devMarker = document.getElementById('devMarker');
+            
+            const dropPinBtn = document.getElementById('dropPinBtn');
+            const depthControlBlock = document.getElementById('depthControlBlock');
+            const depthSlider = document.getElementById('depthSlider');
+            const depthValText = document.getElementById('depthValText');
+            
+            const generatePointBtn = document.getElementById('generatePointBtn');
+            const pointOutput = document.getElementById('pointOutput');
+            const copyPointBtn = document.getElementById('copyPointBtn');
+
+            // Internal Dev State
+            let isDevMode = false;
+            let pinDropped = false;
+            let pinCamPos = [0,0,0];
+            let pinForwardVec = [0,0,0];
+            let calculatedTarget = [0,0,0]; // The resulting 3D coordinate
+
+            // 1. Toggle Dev Mode UI
+            devModeToggle.addEventListener('change', (e) => {
+                isDevMode = e.target.checked;
+                devModeControls.style.display = isDevMode ? 'block' : 'none';
+                devCrosshair.style.display = isDevMode ? 'block' : 'none';
+                
+                if(!isDevMode) {
+                    // Reset if turned off
+                    pinDropped = false;
+                    devMarker.style.display = 'none';
+                    depthControlBlock.style.display = 'none';
+                    pointOutput.style.display = 'none';
+                    copyPointBtn.style.display = 'none';
+                }
+            });
+
+            // 2. Drop Pin (Captures camera ray)
+            dropPinBtn.addEventListener('click', () => {
+                if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined') return;
+                
+                // Get Camera world position and forward vector
+                let camWorld = invert4(viewMatrix);
+                pinCamPos = [camWorld[12], camWorld[13], camWorld[14]];
+                // In WebGL, camera looks down the negative Z axis
+                pinForwardVec = [-camWorld[8], -camWorld[9], -camWorld[10]];
+                
+                // Reset slider to default
+                depthSlider.value = 2.0;
+                depthValText.innerText = "2.00";
+                
+                updateCalculatedTarget();
+                
+                pinDropped = true;
+                devMarker.style.display = 'block';
+                depthControlBlock.style.display = 'block';
+            });
+
+            // 3. Slide Depth (Moves point along the ray)
+            depthSlider.addEventListener('input', (e) => {
+                depthValText.innerText = parseFloat(e.target.value).toFixed(2);
+                updateCalculatedTarget();
+            });
+
+            function updateCalculatedTarget() {
+                let depth = parseFloat(depthSlider.value);
+                calculatedTarget = [
+                    pinCamPos[0] + pinForwardVec[0] * depth,
+                    pinCamPos[1] + pinForwardVec[1] * depth,
+                    pinCamPos[2] + pinForwardVec[2] * depth
+                ];
+            }
+
+            // 4. Animation Loop to project the 3D pin onto the screen
+            function renderDevMarker() {
+                // If the pin is dropped and main.js variables are available
+                if (pinDropped && isDevMode && typeof viewMatrix !== 'undefined' && typeof camera !== 'undefined' && typeof getProjectionMatrix !== 'undefined') {
+                    
+                    // Recreate projection matrix based on current screen size
+                    let proj = getProjectionMatrix(camera.fx, camera.fy, innerWidth, innerHeight);
+                    // Actual view matrix multiplication from main.js
+                    let viewProj = multiply4(proj, viewMatrix); 
+                    
+                    // Project the 3D target to 2D Screen Space
+                    let clipSpace = multiplyMatrixAndPoint(viewProj, calculatedTarget);
+                    let w = clipSpace[3];
+
+                    // Only render if it's in front of the camera
+                    if (w > 0.1) {
+                        let ndcX = clipSpace[0] / w;
+                        let ndcY = clipSpace[1] / w;
+
+                        // Check if within screen bounds roughly
+                        if (ndcX >= -1.2 && ndcX <= 1.2 && ndcY >= -1.2 && ndcY <= 1.2) {
+                            let screenX = (ndcX * 0.5 + 0.5) * innerWidth;
+                            let screenY = -(ndcY * 0.5 - 0.5) * innerHeight; 
+
+                            devMarker.style.display = 'block';
+                            devMarker.style.left = screenX + 'px';
+                            devMarker.style.top = screenY + 'px';
+                        } else {
+                            devMarker.style.display = 'none';
+                        }
+                    } else {
+                        devMarker.style.display = 'none';
+                    }
+                }
+                requestAnimationFrame(renderDevMarker);
+            }
+            // Start the dev loop
+            requestAnimationFrame(renderDevMarker);
+
+            // 5. Generate JSON Button
+            generatePointBtn.addEventListener('click', () => {
+                const roundedPos = calculatedTarget.map(v => Math.round(v * 100) / 100);
+                
+                const finalJson = {
+                    id: document.getElementById('annoId').value || "anno-new",
+                    position: roundedPos,
+                    title: document.getElementById('annoTitle').value,
+                    description: document.getElementById('annoDesc').value,
+                    targetUrlSnippet: document.getElementById('annoUrl').value
+                };
+
+                // Format it nicely so it can be pasted directly into main.js vehicleAnnotations array
+                pointOutput.value = JSON.stringify(finalJson, null, 4) + ",";
+                
+                pointOutput.style.display = 'block';
+                copyPointBtn.style.display = 'block';
+            });
+
+            // 6. Copy Point JSON
+            copyPointBtn.addEventListener('click', () => {
+                if(pointOutput.value) {
+                    navigator.clipboard.writeText(pointOutput.value).then(() => {
+                        const originalText = copyPointBtn.innerText;
+                        copyPointBtn.innerText = "✅ Copied JSON!";
+                        copyPointBtn.style.borderColor = "#4CAF50"; copyPointBtn.style.color = "#4CAF50";
+                        setTimeout(() => { copyPointBtn.innerText = originalText; copyPointBtn.style.borderColor = "rgba(250, 250, 250, 0.2)"; copyPointBtn.style.color = "#FAFAFA"; }, 2000);
                     });
                 }
             });
