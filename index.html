@@ -160,9 +160,6 @@ mouse
                 <div id="devModeControls" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed #4B4C53;">
                     
                     <h4 style="margin-top: 0; font-size: 1rem; color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 4px;">📍 Create Info Point</h4>
-                    <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
-                        Center crosshair on part, click Drop Pin, orbit side, adjust depth.
-                    </p>
                     <button id="dropPinBtn" class="st-button st-button-primary">📍 Drop Pin at Crosshair</button>
                     
                     <div id="depthControlBlock" style="display:none; margin-top: 15px;">
@@ -183,9 +180,33 @@ mouse
 
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #4B4C53;">
                         <h4 style="margin-top: 0; font-size: 1rem; color: #ffbd45; border-bottom: 1px solid #333; padding-bottom: 4px;">📷 Extract Camera Angle</h4>
-                        <p style="font-size: 11px; color: #bbb; line-height: 1.3; margin-top: 0;">
-                            Frame your shot. This generates the exact position and rotation arrays needed for the <code>main.js</code> cameras list.
-                        </p>
+                        
+                        <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 4px; border: 1px solid #333; margin-bottom: 15px;">
+                            <label style="color: #ffbd45; font-size: 12px; margin-bottom: 6px;">1. Absolute Position (X, Y, Z)</label>
+                            <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                                <input type="number" id="tuneX" class="st-input" step="0.05" style="margin-bottom:0;" placeholder="X">
+                                <input type="number" id="tuneY" class="st-input" step="0.05" style="margin-bottom:0;" placeholder="Y">
+                                <input type="number" id="tuneZ" class="st-input" step="0.05" style="margin-bottom:0;" placeholder="Z">
+                            </div>
+
+                            <label style="color: #ffbd45; font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                <span>2. Rotation Nudge Pad</span>
+                                <span style="color:#aaa; font-weight:normal;">Step: <span id="rotStepVal">1.0</span>°</span>
+                            </label>
+                            <input type="range" id="rotStep" class="st-slider" min="0.1" max="5.0" step="0.1" value="1.0" style="margin: 5px 0 10px 0;">
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                                <button id="tiltUpBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">⤴️ Tilt Up</button>
+                                <button id="tiltDownBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">⤵️ Tilt Down</button>
+                                <button id="panLeftBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">↺ Pan Left</button>
+                                <button id="panRightBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">↻ Pan Right</button>
+                                <button id="rollLeftBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">↶ Roll Left</button>
+                                <button id="rollRightBtn" class="st-button st-button-secondary" style="margin-bottom:0; font-size:11px;">↷ Roll Right</button>
+                            </div>
+                            
+                            <button id="centerOriginBtn" class="st-button st-button-secondary" style="margin-top: 10px; border-color: rgba(255,189,69,0.3);">🎯 Reset Camera to Start</button>
+                        </div>
+
                         <button id="generateCamBtn" class="st-button st-button-primary" style="background-color: #ffbd45; color: black;">⚙️ Capture View to JSON</button>
                     </div>
                 </div>
@@ -331,25 +352,85 @@ mouse
                 ];
             }
 
-            function renderDevMarker() {
-                if (pinDropped && isDevMode && typeof viewMatrix !== 'undefined' && typeof camera !== 'undefined' && typeof getProjectionMatrix !== 'undefined') {
-                    let proj = getProjectionMatrix(camera.fx, camera.fy, innerWidth, innerHeight);
-                    let viewProj = multiply4(proj, viewMatrix); 
-                    let clipSpace = multiplyMatrixAndPoint(viewProj, calculatedTarget);
-                    let w = clipSpace[3];
-                    if (w > 0.1) {
-                        let ndcX = clipSpace[0] / w; let ndcY = clipSpace[1] / w;
-                        if (ndcX >= -1.2 && ndcX <= 1.2 && ndcY >= -1.2 && ndcY <= 1.2) {
-                            devMarker.style.display = 'block';
-                            devMarker.style.left = ((ndcX * 0.5 + 0.5) * innerWidth) + 'px';
-                            devMarker.style.top = (-(ndcY * 0.5 - 0.5) * innerHeight) + 'px';
-                        } else devMarker.style.display = 'none';
-                    } else devMarker.style.display = 'none';
-                }
-                requestAnimationFrame(renderDevMarker);
-            }
-            requestAnimationFrame(renderDevMarker);
+            // Central Dev Loop (Handles UI Sync + Point Projection)
+            function renderDevModeLoop() {
+                if (isDevMode && typeof viewMatrix !== 'undefined' && typeof invert4 !== 'undefined') {
+                    
+                    // 1. Sync the X,Y,Z Inputs with the current camera if not actively typing in them
+                    const activeElem = document.activeElement;
+                    const tuneX = document.getElementById('tuneX');
+                    const tuneY = document.getElementById('tuneY');
+                    const tuneZ = document.getElementById('tuneZ');
+                    
+                    if (activeElem !== tuneX && activeElem !== tuneY && activeElem !== tuneZ) {
+                        let inv = invert4(viewMatrix);
+                        tuneX.value = inv[12].toFixed(2);
+                        tuneY.value = inv[13].toFixed(2);
+                        tuneZ.value = inv[14].toFixed(2);
+                    }
 
+                    // 2. Project the Dropped Pin onto screen
+                    if (pinDropped && typeof camera !== 'undefined' && typeof getProjectionMatrix !== 'undefined') {
+                        let proj = getProjectionMatrix(camera.fx, camera.fy, innerWidth, innerHeight);
+                        let viewProj = multiply4(proj, viewMatrix); 
+                        let clipSpace = multiplyMatrixAndPoint(viewProj, calculatedTarget);
+                        let w = clipSpace[3];
+                        if (w > 0.1) {
+                            let ndcX = clipSpace[0] / w; let ndcY = clipSpace[1] / w;
+                            if (ndcX >= -1.2 && ndcX <= 1.2 && ndcY >= -1.2 && ndcY <= 1.2) {
+                                devMarker.style.display = 'block';
+                                devMarker.style.left = ((ndcX * 0.5 + 0.5) * innerWidth) + 'px';
+                                devMarker.style.top = (-(ndcY * 0.5 - 0.5) * innerHeight) + 'px';
+                            } else devMarker.style.display = 'none';
+                        } else devMarker.style.display = 'none';
+                    }
+                }
+                requestAnimationFrame(renderDevModeLoop);
+            }
+            requestAnimationFrame(renderDevModeLoop);
+
+            // Fine Tuning - Applying XYZ changes
+            function updateMatrixFromXYZ() {
+                if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined') return;
+                let inv = invert4(viewMatrix);
+                inv[12] = parseFloat(document.getElementById('tuneX').value) || 0;
+                inv[13] = parseFloat(document.getElementById('tuneY').value) || 0;
+                inv[14] = parseFloat(document.getElementById('tuneZ').value) || 0;
+                viewMatrix = invert4(inv);
+            }
+            document.getElementById('tuneX').addEventListener('input', updateMatrixFromXYZ);
+            document.getElementById('tuneY').addEventListener('input', updateMatrixFromXYZ);
+            document.getElementById('tuneZ').addEventListener('input', updateMatrixFromXYZ);
+
+            // Fine Tuning - Nudge Rotation Logic
+            const rotStepSlider = document.getElementById('rotStep');
+            const rotStepVal = document.getElementById('rotStepVal');
+            
+            rotStepSlider.addEventListener('input', (e) => {
+                rotStepVal.innerText = parseFloat(e.target.value).toFixed(1);
+            });
+
+            function nudgeRotation(axisX, axisY, axisZ, direction) {
+                if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined' || typeof rotate4 === 'undefined') return;
+                let step = parseFloat(rotStepSlider.value) * (Math.PI / 180) * direction;
+                let inv = invert4(viewMatrix);
+                // Rotate the camera in place
+                inv = rotate4(inv, step, axisX, axisY, axisZ);
+                viewMatrix = invert4(inv);
+            }
+
+            document.getElementById('tiltUpBtn').onclick = () => nudgeRotation(1, 0, 0, -1);
+            document.getElementById('tiltDownBtn').onclick = () => nudgeRotation(1, 0, 0, 1);
+            document.getElementById('panLeftBtn').onclick = () => nudgeRotation(0, 1, 0, -1);
+            document.getElementById('panRightBtn').onclick = () => nudgeRotation(0, 1, 0, 1);
+            document.getElementById('rollLeftBtn').onclick = () => nudgeRotation(0, 0, 1, -1);
+            document.getElementById('rollRightBtn').onclick = () => nudgeRotation(0, 0, 1, 1);
+
+            document.getElementById('centerOriginBtn').onclick = () => {
+                if(typeof defaultViewMatrix !== 'undefined') viewMatrix = defaultViewMatrix;
+            };
+
+            // Generators
             generatePointBtn.addEventListener('click', () => {
                 const roundedPos = calculatedTarget.map(v => Math.round(v * 100) / 100);
                 const finalJson = {
@@ -364,24 +445,17 @@ mouse
                 copyDevBtn.style.display = 'block';
             });
 
-            // Camera Angle Extraction Logic
             generateCamBtn.addEventListener('click', () => {
                 if (typeof viewMatrix !== 'undefined' && typeof invert4 !== 'undefined') {
-                    // Extract World Position from the Inverse Matrix
                     let inv = invert4(viewMatrix);
                     let pos = [inv[12], inv[13], inv[14]];
-                    
-                    // Extract 3x3 Rotation from the View Matrix
                     let rot = [
                         [viewMatrix[0], viewMatrix[1], viewMatrix[2]],
                         [viewMatrix[4], viewMatrix[5], viewMatrix[6]],
                         [viewMatrix[8], viewMatrix[9], viewMatrix[10]]
                     ];
-
-                    // Clean up the numbers
                     const cleanPos = pos.map(n => Math.round(n * 1000) / 1000);
                     const cleanRot = rot.map(row => row.map(n => Math.round(n * 100000) / 100000));
-
                     const camJson = {
                         id: 99,
                         img_name: "custom_dev_view",
@@ -392,14 +466,12 @@ mouse
                         fy: 1164.6601,
                         fx: 1159.5880
                     };
-                    
                     devOutputBox.value = JSON.stringify(camJson, null, 4) + ",";
                     devOutputBox.style.display = 'block';
                     copyDevBtn.style.display = 'block';
                 }
             });
 
-            // Universal Copy
             copyDevBtn.addEventListener('click', () => {
                 if(devOutputBox.value) {
                     navigator.clipboard.writeText(devOutputBox.value).then(() => {
