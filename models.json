@@ -183,5 +183,10 @@
     "name": "Equinox",
     "category": "Example",
     "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Refined%20vehicle%20scans/EQUINOXREFINE.ply"
+  },
+  {
+    "name": "Personal Vehicle Test",
+    "category": "Personal Vehicle Test",
+    "url": "https://huggingface.co/datasets/AlistairWstbrk/splats/resolve/main/Personal%20Vehicle%20Scan/personalvehiclescan.ply"
   }
 ]
