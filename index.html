@@ -222,6 +222,20 @@ mouse
             const customCameras = {
                 "Equinox": [
                     { "name": "Overview", "matrix": [0.73, 0.13, -0.67, 0, 0.1, 0.95, 0.29, 0, 0.67, -0.28, 0.68, 0, -0.02, 0.29, 2.22, 1] }
+                ],
+                "personalvehiclescan": [
+                    { 
+                        "name": "Front Bumper View", 
+                        "matrix": [-0.97907, -0.07085, 0.18738, 0, 0.01401, 0.90262, 0.42623, 0, -0.19595, 0.41733, -0.88156, 0, 0.324, 0.525, 4.567, 1] 
+                    },
+                    { 
+                        "name": "Side Profile", 
+                        "matrix": [-0.49287, -0.21952, 0.84118, 0, 0.24347, 0.89136, 0.37788, 0, -0.82941, 0.38898, -0.38792, 0, 0.587, 0.564, 4.196, 1] 
+                    },
+                    { 
+                        "name": "Engine Bay Focus", 
+                        "matrix": [-0.93494, 0.01114, -0.35281, 0, -0.14292, 0.90297, 0.40103, 0, 0.3251, 0.4225, -0.83994, 0, 0.018, 0.503, 5.755, 1] 
+                    }
                 ]
             };
 
@@ -414,7 +428,6 @@ mouse
                 if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined' || typeof rotate4 === 'undefined') return;
                 let step = parseFloat(rotStepSlider.value) * (Math.PI / 180) * direction;
                 let inv = invert4(viewMatrix);
-                // Rotate the camera in place
                 inv = rotate4(inv, step, axisX, axisY, axisZ);
                 viewMatrix = invert4(inv);
             }
