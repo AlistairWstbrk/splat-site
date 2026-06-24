@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 	<head>
-		<title>EV Training Explorer</title>
+		<title>Streamlit 3DGS Viewer</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<style>
-			/* --- ORIGINAL VIEWER CSS --- */
+			/* --- STREAMLIT COMPONENT BASE CSS --- */
 			body {
 				overflow: hidden; margin: 0; height: 100vh; width: 100vw;
 				font-family: "Source Sans Pro", sans-serif;
-				background: black; text-shadow: 0 0 3px black; color: white;
+				background: #0E1117; 
+                color: #FAFAFA;
 			}
-			a { color: white; }
-			#info { z-index: 100; position: absolute; top: 10px; left: 340px; }
-			h3 { margin: 5px 0; }
-			p { margin: 5px 0; font-size: small; }
-
+			
 			.cube-wrapper { transform-style: preserve-3d; }
 			.cube { transform-style: preserve-3d; transform: rotateX(45deg) rotateZ(45deg); animation: rotation 2s infinite; }
 			.cube-faces { transform-style: preserve-3d; height: 80px; width: 80px; position: relative; transform-origin: 0 0; transform: translateX(0) translateY(0) translateZ(-40px); }
-			.cube-face { position: absolute; inset: 0; background: #0017ff; border: solid 1px #ffffff; }
+			.cube-face { position: absolute; inset: 0; background: #FF4B4B; border: solid 1px #ffffff; }
 			.cube-face.top { transform: translateZ(80px); }
 			.cube-face.front { transform-origin: 0 50%; transform: rotateY(-90deg); }
 			.cube-face.back { transform-origin: 0 50%; transform: rotateY(-90deg) translateZ(-80px); }
@@ -34,16 +29,11 @@
 			}
 
 			.scene, #message { position: absolute; display: flex; top: 0; right: 0; left: 0; bottom: 0; z-index: 2; height: 100%; width: 100%; align-items: center; justify-content: center; }
-			#message { font-weight: bold; font-size: large; color: red; pointer-events: none; }
-			details { font-size: small; }
-			#progress { position: absolute; top: 0; height: 5px; background: blue; z-index: 99; transition: width 0.1s ease-in-out; }
-			#quality { position: absolute; bottom: 10px; z-index: 999; right: 10px; }
-			#caminfo { position: absolute; top: 10px; z-index: 999; right: 10px; }
+			#message { font-weight: 600; font-size: 1rem; color: #FF4B4B; pointer-events: none; }
+			#progress { position: absolute; top: 0; height: 4px; background: #FF4B4B; z-index: 99; transition: width 0.1s ease-in-out; }
+			#caminfo { position: absolute; top: 10px; z-index: 999; right: 10px; color: rgba(250,250,250,0.5); font-size: 0.8rem;}
 			
             #canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; z-index: 1;}
-			#instructions { background: rgba(0,0,0,0.6); white-space: pre-wrap; padding: 10px; border-radius: 10px; font-size: x-small; }
-			body.nohf .nohf { display: none; }
-			body.nohf #progress, body.nohf .cube-face { background: #ff9d0d; }
 
 			/* --- SPLAT ANNOTATION MARKERS CSS --- */
 			.splat-marker { position: absolute; display: none; z-index: 100; pointer-events: none; }
@@ -52,51 +42,30 @@
 			.splat-marker.active .anchor-point { transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }
 			.splat-marker .connecting-line { position: absolute; left: 0; top: 0; height: 2px; background: #ffcc00; transform-origin: left center; display: none; pointer-events: none; box-shadow: 0 0 5px rgba(255, 204, 0, 0.5); }
 			.splat-marker .connecting-line::before { content: ''; position: absolute; left: 0; top: -4px; border-right: 12px solid #ffcc00; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
-			.splat-annotation { position: absolute; transform: translate(-50%, -50%) scale(0); opacity: 0; background: rgba(0, 0, 0, 0.95); color: white; padding: 15px; border-radius: 8px; border: 1px solid #ffcc00; font-family: sans-serif; pointer-events: none; backdrop-filter: blur(4px); width: max-content; max-width: 300px; transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: grab; }
+			.splat-annotation { position: absolute; transform: translate(-50%, -50%) scale(0); opacity: 0; background: rgba(38, 39, 48, 0.95); color: #FAFAFA; padding: 15px; border-radius: 8px; border: 1px solid rgba(250,250,250,0.2); font-family: sans-serif; pointer-events: none; backdrop-filter: blur(4px); width: max-content; max-width: 300px; transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: grab; }
 			.splat-annotation:active { cursor: grabbing; }
 			.splat-marker.active .splat-annotation { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
 			.splat-marker.active .connecting-line { display: block; }
-			.splat-annotation .anno-title { font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 6px; margin-bottom: 8px; font-size: 15px; white-space: normal; pointer-events: none; }
-			.splat-annotation .anno-details { font-weight: normal; font-size: 13px; line-height: 1.5; color: #ddd; pointer-events: none; }
+			.splat-annotation .anno-title { font-weight: 600; border-bottom: 1px solid #4B4C53; padding-bottom: 6px; margin-bottom: 8px; font-size: 15px; white-space: normal; pointer-events: none; }
+			.splat-annotation .anno-details { font-weight: normal; font-size: 13px; line-height: 1.5; color: #E0E0E0; pointer-events: none; }
 			.splat-annotation .close-btn { float: right; cursor: pointer; color: #aaa; margin-left: 10px; pointer-events: auto; }
 			.splat-annotation .close-btn:hover { color: #fff; }
 
             /* --- STREAMLIT-STYLE SIDEBAR CSS --- */
-            .streamlit-sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: 320px; background-color: #262730; color: #FAFAFA; padding: 1.5rem 1rem; z-index: 1000; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 10px rgba(0,0,0,0.5); box-sizing: border-box;}
-            .sidebar-section { margin-bottom: 20px; }
-            .sidebar-section label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 13px; color: #FAFAFA; }
-            .st-input { width: 100%; padding: 0.4rem; margin-bottom: 10px; background-color: #0E1117; color: white; border: 1px solid rgba(250, 250, 250, 0.2); border-radius: 0.25rem; box-sizing: border-box; font-family: inherit; font-size: 13px;}
+            .streamlit-sidebar { position: absolute; top: 0; left: 0; bottom: 0; width: 320px; background-color: #262730; color: #FAFAFA; padding: 2rem 1.5rem; z-index: 1000; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 10px rgba(0,0,0,0.2); box-sizing: border-box; border-right: 1px solid rgba(250, 250, 250, 0.1);}
+            .sidebar-section { margin-bottom: 24px; }
+            .sidebar-section label { display: block; margin-bottom: 8px; font-weight: 400; font-size: 14px; color: #FAFAFA; }
+            .st-input { width: 100%; padding: 0.5rem 0.75rem; margin-bottom: 16px; background-color: #0E1117; color: white; border: 1px solid rgba(250, 250, 250, 0.2); border-radius: 0.5rem; box-sizing: border-box; font-family: inherit; font-size: 14px; transition: border-color 0.2s ease;}
             .st-input:focus { outline: none; border-color: #FF4B4B; }
-            .st-button { display: block; width: 100%; padding: 0.5rem; border-radius: 0.25rem; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s ease; box-sizing: border-box; margin-bottom: 8px;}
-            .st-button-primary { background-color: #FF4B4B; color: white; }
-            .st-button-primary:hover { background-color: #FF6666; }
-            .st-button-secondary { background-color: #2b2c36; color: #FAFAFA; border-color: rgba(250, 250, 250, 0.2); }
+            .st-button { display: block; width: 100%; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(250, 250, 250, 0.2); background-color: #262730; color: #FAFAFA; cursor: pointer; font-weight: 400; font-size: 14px; transition: all 0.2s ease; box-sizing: border-box; margin-bottom: 8px;}
+            .st-button-primary { background-color: #FF4B4B; color: white; border-color: #FF4B4B; }
+            .st-button-primary:hover { background-color: #FF6666; border-color: #FF6666; color: white; }
             .st-button-secondary:hover { border-color: #FF4B4B; color: #FF4B4B; }
             .st-slider { width: 100%; margin: 10px 0 15px 0; accent-color: #FF4B4B; }
-            hr { border-top: 1px solid #4B4C53; border-bottom: none; margin: 15px 0; }
+            hr { border-top: 1px solid rgba(250, 250, 250, 0.1); border-bottom: none; margin: 24px 0; }
 		</style>
 	</head>
 	<body>
-		<script>
-			if(location.host.includes('hf.space')) document.body.classList.add('nohf');
-		</script>
-        
-		<div id="info">
-			<h3 class="nohf">WebGL 3D Gaussian Splat Viewer</h3>
-			<details>
-			    <summary>Use mouse or arrow keys to navigate.</summary>
-                <div id="instructions">
-movement (arrow keys)
-- left/right arrow keys to strafe side to side
-- up/down arrow keys to move forward/back
-- space to jump
-mouse
-- click and drag to orbit
-- right click (or ctrl/cmd key) and drag up/down to move
-                </div>
-		    </details>
-		</div>
-
 		<div id="progress"></div>
 		<div id="message"></div>
 		<div class="scene" id="spinner">
@@ -118,33 +87,26 @@ mouse
         </div>
         <div id="devMarker" style="display:none; position:absolute; width:16px; height:16px; background:#00ff88; border:2px solid black; border-radius:50%; transform:translate(-50%, -50%); z-index:101; pointer-events:none; box-shadow: 0 0 10px #00ff88;"></div>
 
-		<div id="quality"><span id="fps"></span></div>
 		<div id="caminfo"><span id="camid"></span></div>
 
         <script src="main.js"></script>
 
         <div class="streamlit-sidebar">
-            <h2 style="margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #4B4C53; padding-bottom: 10px;">EV Training Explorer</h2>
-            
             <div class="sidebar-section">
-                <label for="categorySelect">1. Filter by Type</label>
+                <label for="categorySelect">Filter by Type</label>
                 <select id="categorySelect" class="st-input">
                     <option value="" disabled selected>Loading...</option>
                 </select>
 
-                <label for="modelSelect">2. Select Scan</label>
+                <label for="modelSelect">Select Scan</label>
                 <select id="modelSelect" class="st-input" onchange="changeModel(this.value)">
                     <option value="" disabled selected>-- Select a Type first --</option>
                 </select>
 
-                <label for="cameraSelect" style="margin-top: 10px; color: #ffbd45;">3. Select View Angle</label>
-                <select id="cameraSelect" class="st-input" onchange="changeCameraView(this.value)" style="border-color: rgba(255, 189, 69, 0.4);">
+                <label for="cameraSelect" style="margin-top: 8px;">Select View Angle</label>
+                <select id="cameraSelect" class="st-input" onchange="changeCameraView(this.value)">
                     <option value="" disabled selected>-- Select a Scan first --</option>
                 </select>
-
-                <a id="downloadBtn" href="#" target="_blank" class="st-button st-button-secondary" style="display:none; text-decoration: none; text-align: center; margin-top:15px;">
-                    ⬇️ Download .ply File
-                </a>
             </div>
 
             <hr>
@@ -154,12 +116,12 @@ mouse
                 
                 <label style="display:flex; align-items:center; cursor:pointer; margin-bottom: 15px;">
                     <input type="checkbox" id="devModeToggle" style="margin-right: 8px; width: 16px; height: 16px; accent-color: #FF4B4B;">
-                    <span style="font-size: 14px; font-weight: bold;">Enable Dev Mode</span>
+                    <span style="font-size: 14px; font-weight: 600;">Enable Dev Mode</span>
                 </label>
 
-                <div id="devModeControls" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed #4B4C53;">
+                <div id="devModeControls" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed rgba(250, 250, 250, 0.2);">
                     
-                    <h4 style="margin-top: 0; font-size: 1rem; color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 4px;">📍 Create Info Point</h4>
+                    <h4 style="margin-top: 0; font-size: 1rem; color: #00ff88; border-bottom: 1px solid rgba(250, 250, 250, 0.1); padding-bottom: 4px;">📍 Create Info Point</h4>
                     <button id="dropPinBtn" class="st-button st-button-primary">📍 Drop Pin at Crosshair</button>
                     
                     <div id="depthControlBlock" style="display:none; margin-top: 15px;">
@@ -175,13 +137,13 @@ mouse
                         <label>Target URL Snippet</label>
                         <input type="text" id="annoUrl" class="st-input" placeholder="e.g. Equinox">
                         
-                        <button id="generatePointBtn" class="st-button st-button-primary" style="background-color:#00ff88; color:black;">⚙️ Generate Point JSON</button>
+                        <button id="generatePointBtn" class="st-button st-button-primary" style="background-color:#00ff88; color:black; border-color:#00ff88;">⚙️ Generate Point JSON</button>
                     </div>
 
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #4B4C53;">
-                        <h4 style="margin-top: 0; font-size: 1rem; color: #ffbd45; border-bottom: 1px solid #333; padding-bottom: 4px;">📷 Extract Camera Angle</h4>
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(250, 250, 250, 0.1);">
+                        <h4 style="margin-top: 0; font-size: 1rem; color: #ffbd45; border-bottom: 1px solid rgba(250, 250, 250, 0.1); padding-bottom: 4px;">📷 Extract Camera Angle</h4>
                         
-                        <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 4px; border: 1px solid #333; margin-bottom: 15px;">
+                        <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 4px; border: 1px solid rgba(250, 250, 250, 0.1); margin-bottom: 15px;">
                             <label style="color: #ffbd45; font-size: 12px; margin-bottom: 6px;">1. Absolute Position (X, Y, Z)</label>
                             <div style="display: flex; gap: 5px; margin-bottom: 15px;">
                                 <input type="number" id="tuneX" class="st-input" step="0.05" style="margin-bottom:0;" placeholder="X">
@@ -207,7 +169,7 @@ mouse
                             <button id="centerOriginBtn" class="st-button st-button-secondary" style="margin-top: 10px; border-color: rgba(255,189,69,0.3);">🎯 Reset Camera to Start</button>
                         </div>
 
-                        <button id="generateCamBtn" class="st-button st-button-primary" style="background-color: #ffbd45; color: black;">⚙️ Capture View to JSON</button>
+                        <button id="generateCamBtn" class="st-button st-button-primary" style="background-color: #ffbd45; color: black; border-color:#ffbd45;">⚙️ Capture View to JSON</button>
                     </div>
                 </div>
 
@@ -218,7 +180,6 @@ mouse
         </div>
 
         <script>
-            // --- CUSTOM VIEW DICTIONARY (For the UI dropdown) ---
             const customCameras = {
                 "Equinox": [
                     { "name": "Overview", "matrix": [0.73, 0.13, -0.67, 0, 0.1, 0.95, 0.29, 0, 0.67, -0.28, 0.68, 0, -0.02, 0.29, 2.22, 1] }
@@ -239,12 +200,10 @@ mouse
                 ]
             };
 
-            // --- Model Loading ---
             let allModels = [];
             const categorySelect = document.getElementById('categorySelect');
             const modelSelect = document.getElementById('modelSelect');
             const cameraSelect = document.getElementById('cameraSelect');
-            const downloadBtn = document.getElementById('downloadBtn');
 
             fetch('models.json')
                 .then(response => { if (!response.ok) throw new Error("Could not find models.json"); return response.json(); })
@@ -276,7 +235,6 @@ mouse
                     if (matchedModel) {
                         const cat = matchedModel.category || "Uncategorized";
                         categorySelect.value = cat; updateModelDropdown(cat); modelSelect.value = matchedModel.url;
-                        downloadBtn.href = matchedModel.url; downloadBtn.style.display = "block"; 
                         populateCameraDropdown(currentUrlDecoded);
                     }
                 }
@@ -304,7 +262,7 @@ mouse
                 window.location.hash = encodeURIComponent(matrixStr);
             }
 
-            // --- DEV MODE CONTROLS ---
+            // DEV MODE CONTROLS
             const devModeToggle = document.getElementById('devModeToggle');
             const devModeControls = document.getElementById('devModeControls');
             const devCrosshair = document.getElementById('devCrosshair');
@@ -339,7 +297,6 @@ mouse
                 }
             });
 
-            // Point Logic
             dropPinBtn.addEventListener('click', () => {
                 if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined') return;
                 let camWorld = invert4(viewMatrix);
@@ -366,11 +323,8 @@ mouse
                 ];
             }
 
-            // Central Dev Loop (Handles UI Sync + Point Projection)
             function renderDevModeLoop() {
                 if (isDevMode && typeof viewMatrix !== 'undefined' && typeof invert4 !== 'undefined') {
-                    
-                    // 1. Sync the X,Y,Z Inputs with the current camera if not actively typing in them
                     const activeElem = document.activeElement;
                     const tuneX = document.getElementById('tuneX');
                     const tuneY = document.getElementById('tuneY');
@@ -383,7 +337,6 @@ mouse
                         tuneZ.value = inv[14].toFixed(2);
                     }
 
-                    // 2. Project the Dropped Pin onto screen
                     if (pinDropped && typeof camera !== 'undefined' && typeof getProjectionMatrix !== 'undefined') {
                         let proj = getProjectionMatrix(camera.fx, camera.fy, innerWidth, innerHeight);
                         let viewProj = multiply4(proj, viewMatrix); 
@@ -403,7 +356,6 @@ mouse
             }
             requestAnimationFrame(renderDevModeLoop);
 
-            // Fine Tuning - Applying XYZ changes
             function updateMatrixFromXYZ() {
                 if (typeof viewMatrix === 'undefined' || typeof invert4 === 'undefined') return;
                 let inv = invert4(viewMatrix);
@@ -416,7 +368,6 @@ mouse
             document.getElementById('tuneY').addEventListener('input', updateMatrixFromXYZ);
             document.getElementById('tuneZ').addEventListener('input', updateMatrixFromXYZ);
 
-            // Fine Tuning - Nudge Rotation Logic
             const rotStepSlider = document.getElementById('rotStep');
             const rotStepVal = document.getElementById('rotStepVal');
             
@@ -443,7 +394,6 @@ mouse
                 if(typeof defaultViewMatrix !== 'undefined') viewMatrix = defaultViewMatrix;
             };
 
-            // Generators
             generatePointBtn.addEventListener('click', () => {
                 const roundedPos = calculatedTarget.map(v => Math.round(v * 100) / 100);
                 const finalJson = {
