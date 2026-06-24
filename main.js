@@ -913,7 +913,8 @@ async function main() {
     );
 
     const canvas = document.getElementById("canvas");
-    const fps = document.getElementById("fps");
+    // Removed FPS element reference
+    // const fps = document.getElementById("fps");
     const camid = document.getElementById("camid");
 
     let projectionMatrix;
@@ -1514,7 +1515,9 @@ async function main() {
         } else {
             document.getElementById("progress").style.display = "none";
         }
-        fps.innerText = Math.round(avgFps) + " fps";
+        // Removed FPS text update
+        // fps.innerText = Math.round(avgFps) + " fps";
+        
         if (isNaN(currentCameraIndex)) {
             camid.innerText = "";
         }
